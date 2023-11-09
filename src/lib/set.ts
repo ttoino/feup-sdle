@@ -37,7 +37,9 @@ Set.prototype.difference = function <T>(other: ReadonlySet<T>): Set<T> {
     return this;
 };
 
-Set.prototype.symmetricDifference = function <T>(other: ReadonlySet<T>): Set<T> {
+Set.prototype.symmetricDifference = function <T>(
+    other: ReadonlySet<T>,
+): Set<T> {
     for (const v of other)
         if (this.has(v)) this.delete(v);
         else this.add(v);
