@@ -1,3 +1,4 @@
+import "$lib/set";
 import DotsContext from "./dotscontext";
 
 type DottedValue<V> = [string, number, V];
@@ -7,10 +8,10 @@ export default class AWSet<V> {
     private dots: DotsContext;
 
     constructor(
-        value: Iterable<DottedValue<V>> = [],
+        value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],
         dots = new DotsContext(),
     ) {
-        this._value = new Set(value);
+        this._value = value instanceof Set ? value : new Set(value);
         this.dots = dots;
     }
 
@@ -34,16 +35,16 @@ export default class AWSet<V> {
     }
 
     private f(a: Set<DottedValue<V>>, b: DotsContext) {
-        return new Set(
-            [...a.values()].filter(([id, dot]) => !b.contains(id, dot)),
-        );
+        return new Set([...a.values()].filter(([id, dot]) => !b.has(id, dot)));
     }
 
     merge(other: AWSet<V>) {
-        this._value
-            .intersection(other._value)
-            .union(this.f(other._value, this.dots))
-            .union(this.f(this._value, other.dots));
+        const a = this.f(this._value, other.dots);
+        const b = this.f(other._value, this.dots);
+
+        this._value.intersection(other._value).union(a).union(b);
+
+        this.dots.merge(other.dots);
 
         return this.value;
     }

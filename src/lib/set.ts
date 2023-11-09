@@ -1,19 +1,19 @@
 interface Set<T> {
-    isSuperSetOf(other: ReadonlySet<T>): boolean;
-    isSubSetOf(other: ReadonlySet<T>): boolean;
+    isSuperset(other: ReadonlySet<T>): boolean;
+    isSubset(other: ReadonlySet<T>): boolean;
     union(other: ReadonlySet<T>): Set<T>;
     intersection(other: ReadonlySet<T>): Set<T>;
     difference(other: ReadonlySet<T>): Set<T>;
     symmetricDifference(other: ReadonlySet<T>): Set<T>;
 }
 
-Set.prototype.isSuperSetOf = function <T>(other: ReadonlySet<T>) {
+Set.prototype.isSuperset = function <T>(other: ReadonlySet<T>) {
     for (const v of other) if (!this.has(v)) return false;
 
     return true;
 };
 
-Set.prototype.isSubSetOf = function <T>(other: ReadonlySet<T>) {
+Set.prototype.isSubset = function <T>(other: ReadonlySet<T>) {
     for (const v of this) if (!other.has(v)) return false;
 
     return true;

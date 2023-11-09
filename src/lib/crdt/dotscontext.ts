@@ -24,7 +24,15 @@ export default class DotsContext {
         return [id, dot] as const;
     }
 
-    contains(id: string, dot: number) {
+    has(id: string, dot: number) {
         return (this.dots.get(id) ?? 0) >= dot;
+    }
+
+    merge(other: DotsContext) {
+        for (const [id, dot] of other.dots) {
+            this.dots.set(id, Math.max(this.dots.get(id) ?? 0, dot));
+        }
+
+        return this;
     }
 }

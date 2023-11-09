@@ -10,10 +10,12 @@ export default class GCounter {
     }
 
     inc(v = 1) {
+        if (v < 0) throw new Error("Cannot decrement a GCounter");
+
         return (this._value += v);
     }
 
     merge(other: GCounter) {
-        return (this._value = other._value);
+        return (this._value = Math.max(this._value, other._value));
     }
 }
