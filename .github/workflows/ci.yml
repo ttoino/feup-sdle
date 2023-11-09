@@ -4,6 +4,9 @@ on:
     push:
         branches:
             - main
+    pull_request:
+        branches:
+            - main
 
 jobs:
     lint:
@@ -17,7 +20,7 @@ jobs:
                   node-version: 18
                   cache: npm
             - name: Install dependencies
-              run: npm install --frozen-lockfile
+              run: npm ci
             - name: Lint
               run: npm run lint
 
@@ -32,7 +35,7 @@ jobs:
                   node-version: 18
                   cache: npm
             - name: Install dependencies
-              run: npm install --frozen-lockfile
+              run: npm ci
             - name: Format
               run: npm run format
 
@@ -47,6 +50,6 @@ jobs:
                   node-version: 18
                   cache: npm
             - name: Install dependencies
-              run: npm install --frozen-lockfile
+              run: npm ci
             - name: Test
               run: npm run test
