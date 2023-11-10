@@ -64,7 +64,7 @@ describe("GCounter", () => {
         const counter = new GCounter();
 
         counter.inc(2);
-        expect(counter.toJSON()).toBe(2);
+
         expect(JSON.stringify(counter)).toBe("2");
     });
 });

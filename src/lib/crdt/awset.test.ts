@@ -131,18 +131,6 @@ describe("AWSet", () => {
         set.add(id1, 2);
         set.add(id1, 3);
 
-        const expected = {
-            value: [
-                [id1, 1, 1],
-                [id1, 2, 2],
-                [id1, 3, 3],
-            ],
-            dots: {
-                [id1]: 3,
-            },
-        } as const;
-
-        expect(set.toJSON()).toEqual(expected);
         expect(JSON.stringify(set)).toEqual(
             `{"value":[["${id1}",1,1],["${id1}",2,2],["${id1}",3,3]],"dots":{"${id1}":3}}`,
         );

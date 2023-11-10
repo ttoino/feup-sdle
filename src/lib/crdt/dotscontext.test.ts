@@ -131,7 +131,6 @@ describe("DotsContext", () => {
         dots.next("a");
         dots.next("a");
 
-        expect(dots.toJSON()).toEqual({ a: 3 });
         expect(JSON.stringify(dots)).toEqual('{"a":3}');
     });
 });

@@ -60,7 +60,6 @@ describe("GSet", () => {
         set.add(2);
         set.add(3);
 
-        expect(set.toJSON()).toEqual([1, 2, 3]);
         expect(JSON.stringify(set)).toEqual("[1,2,3]");
     });
 });

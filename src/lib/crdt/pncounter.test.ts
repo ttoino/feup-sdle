@@ -107,7 +107,8 @@ describe("PNCounter", () => {
         counter.inc();
         counter.dec();
 
-        expect(counter.toJSON()).toEqual({ increments: 2, decrements: 1 });
-        expect(JSON.stringify(counter)).toEqual('{"increments":2,"decrements":1}');
+        expect(JSON.stringify(counter)).toEqual(
+            '{"increments":2,"decrements":1}',
+        );
     });
 });

@@ -34,6 +34,12 @@ export default class AWSet<V> {
         return this.value;
     }
 
+    reset() {
+        this._value.clear();
+
+        return this.value;
+    }
+
     private f(a: Set<DottedValue<V>>, b: DotsContext) {
         return new Set([...a.values()].filter(([id, dot]) => !b.has(id, dot)));
     }
