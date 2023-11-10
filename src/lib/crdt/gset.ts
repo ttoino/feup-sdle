@@ -18,4 +18,8 @@ export default class GSet<V> {
 
         return this.value;
     }
+
+    toJSON() {
+        return [...this._value.values()];
+    }
 }

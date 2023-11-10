@@ -31,4 +31,11 @@ export default class PNCounter {
 
         return this.value;
     }
+
+    toJSON() {
+        return {
+            increments: this.increments,
+            decrements: this.decrements,
+        };
+    }
 }

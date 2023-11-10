@@ -123,4 +123,15 @@ describe("DotsContext", () => {
 
         expect(dots1.merge(dots2)).toEqual(new DotsContext({ a: 2, b: 3 }));
     });
+
+    it("should be able to be converted to JSON", () => {
+        const dots = new DotsContext();
+
+        dots.next("a");
+        dots.next("a");
+        dots.next("a");
+
+        expect(dots.toJSON()).toEqual({ a: 3 });
+        expect(JSON.stringify(dots)).toEqual('{"a":3}');
+    });
 });

@@ -48,4 +48,11 @@ export default class AWSet<V> {
 
         return this.value;
     }
+
+    toJSON() {
+        return {
+            value: [...this._value.values()],
+            dots: this.dots,
+        };
+    }
 }

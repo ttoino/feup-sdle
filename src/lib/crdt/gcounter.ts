@@ -18,4 +18,8 @@ export default class GCounter {
     merge(other: GCounter) {
         return (this._value = Math.max(this._value, other._value));
     }
+
+    toJSON() {
+        return this._value;
+    }
 }

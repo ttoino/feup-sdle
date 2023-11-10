@@ -8,7 +8,7 @@ export default class DotsContext {
             | Iterable<[string, number]> = [],
     ) {
         this.dots = new Map(
-            dots instanceof Map || dots instanceof Array
+            dots instanceof Map || Symbol.iterator in dots
                 ? dots
                 : Object.entries(dots),
         );
@@ -34,5 +34,9 @@ export default class DotsContext {
         }
 
         return this;
+    }
+
+    toJSON() {
+        return Object.fromEntries(this.dots);
     }
 }

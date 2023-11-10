@@ -52,4 +52,15 @@ describe("GSet", () => {
 
         expect(set1.merge(set2)).toEqual(new Set([1, 2, 3]));
     });
+
+    it("should be able to be converted to JSON", () => {
+        const set = new GSet();
+
+        set.add(1);
+        set.add(2);
+        set.add(3);
+
+        expect(set.toJSON()).toEqual([1, 2, 3]);
+        expect(JSON.stringify(set)).toEqual("[1,2,3]");
+    });
 });
