@@ -4,8 +4,8 @@ import DotsContext from "./dotscontext";
 type DottedValue<V> = [string, number, V];
 
 export default class AWSet<V> {
-    private _value: Set<DottedValue<V>>;
-    private dots: DotsContext;
+    protected _value: Set<DottedValue<V>>;
+    protected dots: DotsContext;
 
     constructor(
         value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],
