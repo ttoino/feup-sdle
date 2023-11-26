@@ -15,11 +15,11 @@ export default class AWMap<K, V extends DotsCRDT> {
     private _dots: DotsContext;
 
     constructor(
-        value: ConstructorParameters<typeof AWSet<K>>[0] = [],
+        set: ConstructorParameters<typeof AWSet<K>>[0] = [],
         map: ConstructorParameters<typeof Map<K, V>>[0] = [],
         dots = new DotsContext(),
     ) {
-        this._set = new AWSet(value, dots);
+        this._set = new AWSet(set, dots);
         this.map = new Map(map);
         this._dots = dots;
     }
@@ -66,5 +66,13 @@ export default class AWMap<K, V extends DotsCRDT> {
         if (mergeDots) this._dots.merge(other._dots);
 
         return this.value;
+    }
+
+    toJSON() {
+        return {
+            set: this._set.toJSON(),
+            map: [...this.map.entries()],
+            dots: this._dots.toJSON(),
+        };
     }
 }
