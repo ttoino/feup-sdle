@@ -36,12 +36,12 @@ export default class AWMap<K, V extends DotsCRDT> {
         return this.map.get(key);
     }
 
-    set(id: string, key: K, value: V) {
+    set(id: string, key: K, value: V, mergeDots = true) {
         if (!this._set.value.has(key)) this._set.add(id, key);
 
         if (!this.map.has(key)) this.map.set(key, value);
         // @ts-expect-error: Typescript isn't smart enough to know the type of merge
-        else this.map.get(key).merge(value);
+        else this.map.get(key).merge(value, mergeDots);
 
         return this.value;
     }
@@ -60,8 +60,8 @@ export default class AWMap<K, V extends DotsCRDT> {
 
         for (const [key, value] of other.map)
             if (this._set.value.has(key))
-                // @ts-expect-error: Typescript isn't smart enough to know the type of merge
-                this.map.get(key)?.merge(value, false);
+                // We can do this because the key is in the set
+                this.set("", key, value, false)
 
         if (mergeDots) this._dots.merge(other._dots);
 
