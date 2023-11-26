@@ -45,8 +45,8 @@ export default class CCounter {
         return this.inc(id, -v);
     }
 
-    merge(other: CCounter) {
-        this.set.merge(other.set);
+    merge(other: CCounter, mergeDots = true) {
+        this.set.merge(other.set, mergeDots);
 
         return this.value;
     }

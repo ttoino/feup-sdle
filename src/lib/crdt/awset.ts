@@ -44,13 +44,13 @@ export default class AWSet<V> {
         return new Set([...a.values()].filter(([id, dot]) => !b.has(id, dot)));
     }
 
-    merge(other: AWSet<V>) {
+    merge(other: AWSet<V>, mergeDots = true) {
         const a = this.f(this._value, other.dots);
         const b = this.f(other._value, this.dots);
 
         this._value.intersection(other._value).union(a).union(b);
 
-        this.dots.merge(other.dots);
+        if (mergeDots) this.dots.merge(other.dots);
 
         return this.value;
     }

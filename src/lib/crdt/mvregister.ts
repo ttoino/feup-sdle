@@ -21,8 +21,8 @@ export default class MVRegister<V> {
         return this.set.add(id, v);
     }
 
-    merge(other: MVRegister<V>) {
-        this.set.merge(other.set);
+    merge(other: MVRegister<V>, mergeDots = true) {
+        this.set.merge(other.set, mergeDots);
 
         return this.value;
     }
