@@ -17,7 +17,7 @@
     </h1>
     <h2 class="my-2 text-center text-2xl">Create one!</h2>
 
-    <form action="" class="flex flex-col items-center gap-4">
+    <form method="POST" class="flex flex-col items-center gap-4">
         <label class="form-control">
             <input
                 type="text"
