@@ -5,11 +5,11 @@
 
     import * as localForage from "localforage";
     import type { PageData } from "./$types";
+    import WrappingInput from "$lib/components/WrappingInput.svelte";
 
     export let data: PageData;
 
-    // TODO: get from localForage
-    export let shoppingLists = data.shoppingLists;
+    const { shoppingLists } = data;
 
     // TODO: make this general, not just for the first one
     async function createFirstShoppingList(event: Event) {
@@ -25,46 +25,44 @@
             const serializedList = list.serialize();
 
             await localForage.setItem(listId, serializedList);
+
+            goto(`/${listId}`);
         } catch (encodeURIError) {
             console.log("Error", encodeURIError);
         }
-
-        goto(`/${listId}`);
     }
 </script>
 
-{#if shoppingLists.length > 0}
-    <h1 class="mb-2 w-4/5 text-start text-4xl font-bold">
-        Your shopping lists:
-    </h1>
-    <h2 class="my-2 w-4/5 text-start text-xl">Click on one to open it!</h2>
-    <div class="divider mx-auto w-3/4"></div>
-    <ul class="join join-vertical w-3/4 gap-5">
-        {#each shoppingLists as shoppingList}
-            <ShoppingListItem {shoppingList} />
-        {/each}
-    </ul>
-{:else}
-    <h1 class="mb-2 text-center text-4xl font-bold">
-        You don't have any shopping lists yet.
-    </h1>
-    <h2 class="my-2 text-center text-2xl">Create one!</h2>
+<div class="mx-auto flex w-full max-w-screen-lg flex-col gap-4 self-stretch">
+    {#if shoppingLists.length > 0}
+        <h1 class="text-4xl font-bold">Your shopping lists</h1>
+        <h2 class="text-xl">Click on one to open it!</h2>
+        <ul class="join join-vertical">
+            {#each shoppingLists as shoppingList}
+                <ShoppingListItem {shoppingList} />
+            {/each}
+        </ul>
+    {:else}
+        <h1 class="text-center text-4xl font-bold">
+            You don't have any shopping lists yet
+        </h1>
+    {/if}
 
+    <h2 class="text-center text-xl">Create one!</h2>
     <form
         method="POST"
-        class="flex flex-col items-center gap-4"
+        class="contents"
         on:submit|preventDefault={createFirstShoppingList}
     >
         <label class="form-control">
-            <input
-                type="text"
+            <WrappingInput
                 name="name"
                 id="name"
-                class="input input-bordered"
+                class="textarea-bordered"
                 placeholder="Name"
                 required
             />
         </label>
         <button type="submit" class="btn btn-outline">Create</button>
     </form>
-{/if}
+</div>

@@ -2,13 +2,11 @@
     import { Icon, Home } from "svelte-hero-icons";
 </script>
 
-<nav class="flex justify-between px-10 py-8">
-    <div class="flex items-center space-x-4">
-        <a href="/">
-            <Icon src={Home} class="h-6 w-6" />
-        </a>
-    </div>
-    <div>
+<nav class="navbar bg-base-300">
+    <a href="/" class="btn btn-square btn-ghost">
+        <Icon src={Home} class="h-6 w-6" />
+    </a>
+    <div class="flex-1">
         <!-- Dummy div for now, might have content later -->
     </div>
 </nav>
