@@ -4,6 +4,8 @@ import CCounter from "./crdt/ccounter";
 import DotsContext from "./crdt/dotscontext";
 import MVRegister from "./crdt/mvregister";
 
+import { uneval } from "devalue";
+
 export class ShoppingListItem extends AWMap<
     "name" | "count",
     MVRegister<string> | CCounter
@@ -105,4 +107,13 @@ export default class ShoppingList {
 
         return this;
     }
+
+    serialize() {
+        return uneval(this, serialize);
+    }
+}
+
+
+export const serialize = (value: unknown): string => {
+    return `${value}`;
 }

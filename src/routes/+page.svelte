@@ -1,8 +1,33 @@
 <script lang="ts">
+    import { goto } from "$app/navigation";
     import ShoppingListItem from "$lib/components/home/ShoppingList.svelte";
-    import type ShoppingList from "$lib/list";
+    import ShoppingList from "$lib/list";
 
+    import * as localForage from "localforage";
+
+    // TODO: get from localForage
     export let shoppingLists: ShoppingList[] = [];
+
+    async function createShoppingList(event: Event) {
+        const data = new FormData(event.target as HTMLFormElement);
+
+        const listName = data.get("name")! as string;
+
+        const list = ShoppingList.new(listName);
+
+        const listId = list.id;
+        try {
+            const serializedList = list.serialize();
+
+            await localForage.setItem(listId, serializedList);
+        } catch (encodeURIError) {
+            console.error(encodeURIError);
+        }
+
+        shoppingLists = [...shoppingLists, list];
+
+        goto(`/${listId}`);
+    }
 </script>
 
 {#if shoppingLists.length > 0}
@@ -22,7 +47,11 @@
     </h1>
     <h2 class="my-2 text-center text-2xl">Create one!</h2>
 
-    <form method="POST" class="flex flex-col items-center gap-4">
+    <form
+        method="POST"
+        class="flex flex-col items-center gap-4"
+        on:submit|preventDefault={createShoppingList}
+    >
         <label class="form-control">
             <input
                 type="text"
