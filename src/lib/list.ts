@@ -4,7 +4,7 @@ import CCounter from "./crdt/ccounter";
 import DotsContext from "./crdt/dotscontext";
 import MVRegister from "./crdt/mvregister";
 
-import { uneval } from "devalue";
+import { stringify, parse } from "devalue";
 
 export class ShoppingListItem extends AWMap<
     "name" | "count",
@@ -109,11 +109,22 @@ export default class ShoppingList {
     }
 
     serialize() {
-        return uneval(this, serialize);
+        return stringify(this, {
+            ShoppingList: (value) => value instanceof ShoppingList && ({
+                id: value.id,
+                dots: value.dots,
+            }),
+            DotsContext: (value) => value instanceof DotsContext && value.toJSON(),
+        });
     }
 }
 
 
-export const serialize = (value: unknown): string => {
-    return `${value}`;
+export const deserialize = (serialized: string): ShoppingList => {
+    const list = parse(serialized, {
+        ShoppingList: (value) => (ShoppingList.new(value.id, value.dots)),
+        DotsContext: (value) => new DotsContext(value),
+    });
+
+    return list;
 }

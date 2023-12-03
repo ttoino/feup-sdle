@@ -16,12 +16,15 @@
         const list = ShoppingList.new(listName);
 
         const listId = list.id;
+
         try {
+            console.log("Serializing:", list);
             const serializedList = list.serialize();
+            console.log("Serialized:", serializedList);
 
             await localForage.setItem(listId, serializedList);
         } catch (encodeURIError) {
-            console.error(encodeURIError);
+            console.log("Error", encodeURIError);
         }
 
         shoppingLists = [...shoppingLists, list];
