@@ -4,11 +4,15 @@
     import ShoppingList from "$lib/list";
 
     import * as localForage from "localforage";
+    import type { PageData } from "./$types";
+
+    export let data: PageData;
 
     // TODO: get from localForage
-    export let shoppingLists: ShoppingList[] = [];
+    export let shoppingLists = data.shoppingLists;
 
-    async function createShoppingList(event: Event) {
+    // TODO: make this general, not just for the first one
+    async function createFirstShoppingList(event: Event) {
         const data = new FormData(event.target as HTMLFormElement);
 
         const listName = data.get("name")! as string;
@@ -18,16 +22,12 @@
         const listId = list.id;
 
         try {
-            console.log("Serializing:", list);
             const serializedList = list.serialize();
-            console.log("Serialized:", serializedList);
 
             await localForage.setItem(listId, serializedList);
         } catch (encodeURIError) {
             console.log("Error", encodeURIError);
         }
-
-        shoppingLists = [...shoppingLists, list];
 
         goto(`/${listId}`);
     }
@@ -53,7 +53,7 @@
     <form
         method="POST"
         class="flex flex-col items-center gap-4"
-        on:submit|preventDefault={createShoppingList}
+        on:submit|preventDefault={createFirstShoppingList}
     >
         <label class="form-control">
             <input
