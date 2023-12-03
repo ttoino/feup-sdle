@@ -1,9 +1,10 @@
 <script lang="ts">
-    import { Icon, Plus } from "svelte-hero-icons";
+    import { Icon, Plus, Share } from "svelte-hero-icons";
     import id from "$lib/stores/id";
     import MVRegister from "$lib/components/mvregister.svelte";
     import type { ShoppingListItem } from "$lib/list";
     import type { PageData } from "./$types";
+    import { copy } from "svelte-copy";
 
     export let data: PageData;
 
@@ -33,9 +34,14 @@
 </script>
 
 <div class="flex w-full max-w-screen-lg flex-col gap-4 p-4">
-    <MVRegister register={list.name} let:value defaultValue="">
-        <h1 class="text-2xl">{value}</h1>
-    </MVRegister>
+    <header class="flex justify-between pr-3">
+        <MVRegister register={list.name} let:value defaultValue="List Name">
+            <h1 class="text-2xl">{value}</h1>
+        </MVRegister>
+        <button use:copy={`/${list.id}`}>
+            <Icon src={Share} class="h-6 w-6" />
+        </button>
+    </header>
 
     <ul class="join join-vertical">
         {#each list.items.value as item}
