@@ -113,7 +113,7 @@ export default class ShoppingList {
             ShoppingList: (value) => value instanceof ShoppingList && ({
                 id: value.id,
                 dots: value.dots,
-                name: value.name
+                name: value.name,
             }),
             DotsContext: (value) => value instanceof DotsContext && value.toJSON(),
             MVRegister: (value) => value instanceof MVRegister && value.toJSON(),
@@ -130,7 +130,7 @@ export const deserialize = (serialized: string): ShoppingList => {
             console.log("value.name", value.name)
             console.log("list.name", list.name)
             
-            list.name.merge(value.name);
+            console.log("merged", list.name.merge(value.name));
             list.name.assign(value.name.id, value.name.value.values().next().value); // HACK:
 
             return list;

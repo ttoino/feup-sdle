@@ -7,6 +7,8 @@
     import { copy } from "svelte-copy";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
 
+    import { addNotification } from "$lib/stores/notifications";
+
     import localforage from "localforage";
 
     export let data: PageData;
@@ -75,6 +77,17 @@
         <button
             class="btn btn-square btn-outline btn-secondary"
             use:copy={`/${list.id}`}
+            on:click={() =>
+                addNotification("Copied list URL to clipboard", {
+                    type: "success",
+                    dismissible: true,
+                    timeout: 3000,
+                })}
+            on:svelte-copy:error={() =>
+                addNotification("Error copying list URL to clipboard", {
+                    type: "success",
+                    dismissible: true,
+                })}
         >
             <Icon src={Share} class="h-6 w-6" />
         </button>
