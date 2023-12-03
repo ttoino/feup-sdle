@@ -1,14 +1,13 @@
 <script lang="ts">
     import { Icon, Plus } from "svelte-hero-icons";
-    import id from "$lib/stores/id"
+    import id from "$lib/stores/id";
     import MVRegister from "$lib/components/mvregister.svelte";
-    import ShoppingList, { ShoppingListItem } from "$lib/list";
-    import { page } from "$app/stores";
+    import type { ShoppingListItem } from "$lib/list";
+    import type { PageData } from "./$types";
 
-    let list = ShoppingList.new($id!, $page.params.list, "New list");
-    list.newItem($id!, "Item 1");
-    list.newItem($id!, "Item 2");
-    list.newItem($id!, "Item 3");
+    export let data: PageData;
+
+    let list = data.list;
 
     let name = "";
 
@@ -23,17 +22,25 @@
         item.name.assign($id!, (e.target as HTMLInputElement).value);
         list = list;
     };
+
+    const changeCount = (item: ShoppingListItem) => (e: Event) => {
+        item.count.inc(
+            $id!,
+            parseInt((e.target as HTMLInputElement).value) - item.count.value,
+        );
+        list = list;
+    };
 </script>
 
 <div class="flex w-full max-w-screen-lg flex-col gap-4 p-4">
-    <MVRegister register={list.name} let:value>
+    <MVRegister register={list.name} let:value defaultValue="">
         <h1 class="text-2xl">{value}</h1>
     </MVRegister>
 
     <ul class="join join-vertical">
         {#each list.items.value as item}
             <li class="join join-item join-horizontal">
-                <MVRegister register={item[1].name} let:value>
+                <MVRegister register={item[1].name} let:value defaultValue="">
                     <input
                         class="input join-item input-bordered flex-1"
                         on:change={changeName(item[1])}
@@ -43,6 +50,7 @@
                 <input
                     class="input join-item input-bordered aspect-square px-0 text-center"
                     inputmode="numeric"
+                    on:change={changeCount(item[1])}
                     value={item[1].count.value.toString()}
                 />
             </li>

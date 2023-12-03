@@ -80,10 +80,8 @@ export default class ShoppingList {
         this.dots = dots;
     }
 
-    static new(id:string, listId: string, name: string, dots = new DotsContext()) {
+    static new(listId: string, dots = new DotsContext()) {
         const nameRegister = new MVRegister<string>([], dots);
-        nameRegister.assign(id, name);
-
         const items = new AWMap<string, ShoppingListItem>([], [], dots);
 
         return new ShoppingList(listId, nameRegister, items, dots);
