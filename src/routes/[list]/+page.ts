@@ -1,9 +1,24 @@
 import MVRegister from "$lib/crdt/mvregister";
-import ShoppingList from "$lib/list";
+import type ShoppingList from "$lib/list";
 import type { PageLoad } from "./$types";
 
-export const load: PageLoad = ({ params }) => {
-    const list = ShoppingList.new(params.list);
+import localForage from 'localforage';
+
+import { error } from '@sveltejs/kit';
+
+export const load: PageLoad = async ({ params }) => {
+
+    if (!params.list) {
+        throw error(400, "Missing list name");
+    }
+
+    const listId = params.list;
+
+    if (!await localForage.getItem(listId)) {
+        throw error(404, `List with id "${listId}" not found`);
+    }
+
+    const list: ShoppingList = await localForage.getItem<string>(listId).then((val) => eval(val!));
 
     const register = new MVRegister<string>();
     register.assign("asjdnjkas", "Name 1");

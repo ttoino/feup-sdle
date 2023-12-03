@@ -48,5 +48,9 @@
         "vite": "^4.5.0",
         "vitest": "^0.34.6"
     },
-    "type": "module"
+    "type": "module",
+    "dependencies": {
+        "devalue": "^4.3.2",
+        "localforage": "^1.10.0"
+    }
 }
