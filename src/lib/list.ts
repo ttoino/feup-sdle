@@ -113,8 +113,10 @@ export default class ShoppingList {
             ShoppingList: (value) => value instanceof ShoppingList && ({
                 id: value.id,
                 dots: value.dots,
+                name: value.name
             }),
             DotsContext: (value) => value instanceof DotsContext && value.toJSON(),
+            MVRegister: (value) => value instanceof MVRegister && value.toJSON(),
         });
     }
 }
@@ -122,8 +124,19 @@ export default class ShoppingList {
 
 export const deserialize = (serialized: string): ShoppingList => {
     const list = parse(serialized, {
-        ShoppingList: (value) => (ShoppingList.new(value.id, value.dots)),
+        ShoppingList: (value) => {
+            const list = ShoppingList.new(value.id, value.dots)
+        
+            console.log("value.name", value.name)
+            console.log("list.name", list.name)
+            
+            list.name.merge(value.name);
+            list.name.assign(value.name.id, value.name.value.values().next().value); // HACK:
+
+            return list;
+        },
         DotsContext: (value) => new DotsContext(value),
+        MVRegister: (value) => new MVRegister(value.value, value.dots),
     });
 
     return list;

@@ -7,14 +7,17 @@
     import { copy } from "svelte-copy";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
 
+    import localforage from "localforage";
+
     export let data: PageData;
 
     let list = data.list;
 
     let name = "";
 
-    const changeName = (name?: string) => (e: Event) => {
+    const changeName = (name?: string) => async (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
+        await localforage.setItem(list.id, list.serialize());
         list = list;
     };
 
