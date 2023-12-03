@@ -61,7 +61,7 @@ export default class AWMap<K, V extends DotsCRDT> {
         for (const [key, value] of other.map)
             if (this._set.value.has(key))
                 // We can do this because the key is in the set
-                this.set("", key, value, false)
+                this.set("", key, value, false);
 
         if (mergeDots) this._dots.merge(other._dots);
 

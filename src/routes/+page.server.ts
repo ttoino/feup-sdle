@@ -1,14 +1,14 @@
-import type { Actions } from './$types';
+import type { Actions } from "./$types";
 
-import ShoppingList from '$lib/list';
+import ShoppingList from "$lib/list";
 
-import { redirect } from '@sveltejs/kit';
+import { redirect } from "@sveltejs/kit";
 
-export const actions = {	
-    default: async ({request}) => {
+export const actions = {
+    default: async ({ request }) => {
         const data = await request.formData();
-        
-        const listName = data.get('name')! as string;
+
+        const listName = data.get("name")! as string;
 
         const list = ShoppingList.new(listName);
 
