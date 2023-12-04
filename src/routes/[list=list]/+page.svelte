@@ -43,7 +43,7 @@
 
         persistList();
         list = list;
-    }
+    };
 </script>
 
 <div class="flex w-full max-w-screen-lg flex-col gap-4 p-4">
@@ -91,11 +91,17 @@
         </button>
     </header>
 
-    <ul class="join join-vertical">
-        {#each list.items.value as [id, item]}
-            <Item {item} {persistList} deleteThis={deleteItem(id)} />
-        {/each}
-    </ul>
+    {#if list.items.value.size > 0}
+        <ul class="join join-vertical">
+            {#each list.items.value as [id, item]}
+                <Item {item} {persistList} deleteThis={deleteItem(id)} />
+            {/each}
+        </ul>
+    {:else}
+        <p class="text-center text-gray-500">
+            No items yet. Add one below!
+        </p>
+    {/if}
 
     <NewItem {newItem} />
 
