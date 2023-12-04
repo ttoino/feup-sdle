@@ -10,6 +10,8 @@
     import localforage from "localforage";
     import NewItem from "./NewItem.svelte";
 
+    import { base } from "$app/paths";
+
     export let data: PageData;
 
     let { list } = data;
@@ -74,7 +76,7 @@
         </h1>
         <button
             class="btn btn-square btn-outline btn-secondary"
-            use:copy={`/${list.id}`}
+            use:copy={`${base}/${list.id}`}
             on:click={() =>
                 addNotification("Copied list URL to clipboard", {
                     type: "success",
@@ -98,9 +100,7 @@
             {/each}
         </ul>
     {:else}
-        <p class="text-center text-gray-500">
-            No items yet. Add one below!
-        </p>
+        <p class="text-center text-gray-500">No items yet. Add one below!</p>
     {/if}
 
     <NewItem {newItem} />

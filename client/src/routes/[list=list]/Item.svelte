@@ -61,7 +61,7 @@
         value={item.count.value.toString()}
     />
     <button
-        class="btn btn-square btn-outline h-auto btn-error join-item"
+        class="btn btn-square btn-outline btn-error join-item h-auto"
         on:click={deleteThis}
     >
         <Icon src={XMark} class="h-6 w-6" />
