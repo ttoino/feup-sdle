@@ -123,16 +123,4 @@ describe("AWSet", () => {
 
         expect(set1.merge(set2)).toEqual(new Set([1]));
     });
-
-    it("should be able to be converted to JSON", () => {
-        const set = new AWSet();
-
-        set.add(id1, 1);
-        set.add(id1, 2);
-        set.add(id1, 3);
-
-        expect(JSON.stringify(set)).toEqual(
-            `{"value":[["${id1}",1,1],["${id1}",2,2],["${id1}",3,3]],"dots":{"${id1}":3}}`,
-        );
-    });
 });

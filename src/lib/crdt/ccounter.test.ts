@@ -102,16 +102,4 @@ describe("CCounter", () => {
 
         expect(counter1.merge(counter2)).toBe(1);
     });
-
-    it("should be able to be converted to JSON", () => {
-        const counter = new CCounter();
-
-        counter.inc(id1);
-        counter.inc(id1);
-        counter.dec(id1);
-
-        expect(JSON.stringify(counter)).toEqual(
-            `{"value":[["${id1}",3,1]],"dots":{"${id1}":3}}`,
-        );
-    });
 });

@@ -4,9 +4,9 @@ export default class PNCounter {
     private increments: GCounter;
     private decrements: GCounter;
 
-    constructor(value = 0) {
-        this.increments = new GCounter(value);
-        this.decrements = new GCounter();
+    constructor(increments = 0, decrements = 0) {
+        this.increments = new GCounter(increments);
+        this.decrements = new GCounter(decrements);
     }
 
     get value() {
@@ -34,8 +34,8 @@ export default class PNCounter {
 
     toJSON() {
         return {
-            increments: this.increments,
-            decrements: this.decrements,
+            increments: this.increments.value,
+            decrements: this.decrements.value,
         };
     }
 }

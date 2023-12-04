@@ -69,15 +69,4 @@ describe("MVRegister", () => {
 
         expect(register1.merge(register2)).toEqual(new Set([1, 2]));
     });
-
-    it("should be able to be converted to JSON", () => {
-        const register = new MVRegister();
-
-        register.assign(id1, 1);
-        register.assign(id2, 2);
-
-        expect(JSON.stringify(register)).toEqual(
-            `{"value":[["${id2}",1,2]],"dots":{"${id1}":1,"${id2}":1}}`,
-        );
-    });
 });

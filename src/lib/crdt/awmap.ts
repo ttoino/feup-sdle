@@ -68,10 +68,17 @@ export default class AWMap<K, V extends DotsCRDT> {
         return this.value;
     }
 
-    toJSON() {
+    toJSON(): {
+        value: ReturnType<AWSet<K>["toJSON"]>["value"];
+        map: [K, ReturnType<V["toJSON"]>][];
+        dots: ReturnType<DotsContext["toJSON"]>;
+    } {
         return {
-            set: this._set.toJSON(),
-            map: [...this.map.entries()],
+            value: this._set.toJSON().value,
+            // @ts-expect-error: Typescript isn't smart enough to get this
+            map: [...this.map.entries()].map(
+                ([key, value]) => [key, value.toJSON()] as const,
+            ),
             dots: this._dots.toJSON(),
         };
     }

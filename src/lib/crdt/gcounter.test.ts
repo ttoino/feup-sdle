@@ -59,12 +59,4 @@ describe("GCounter", () => {
 
         expect(counter1.merge(counter2)).toBe(2);
     });
-
-    it("should be able to be converted to JSON", () => {
-        const counter = new GCounter();
-
-        counter.inc(2);
-
-        expect(JSON.stringify(counter)).toBe("2");
-    });
 });

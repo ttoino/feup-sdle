@@ -15,7 +15,7 @@
     let { list } = data;
 
     const persistList = async () =>
-        await localforage.setItem(list.id, list.serialize());
+        await localforage.setItem(list.id, list.toJSON());
 
     const changeName = (name?: string) => async (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
@@ -37,6 +37,13 @@
         // Reassigning list to itself to trigger reactivity
         list = list;
     };
+
+    const deleteItem = (item: string) => () => {
+        list.items.remove(item);
+
+        persistList();
+        list = list;
+    }
 </script>
 
 <div class="flex w-full max-w-screen-lg flex-col gap-4 p-4">
@@ -85,8 +92,8 @@
     </header>
 
     <ul class="join join-vertical">
-        {#each list.items.value as [_, item]}
-            <Item {item} {persistList} />
+        {#each list.items.value as [id, item]}
+            <Item {item} {persistList} deleteThis={deleteItem(id)} />
         {/each}
     </ul>
 

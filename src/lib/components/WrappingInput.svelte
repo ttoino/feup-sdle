@@ -8,10 +8,10 @@
     }
 
     export let value: string = "";
-    export let pattern: string = "";
+    export let pattern: string | undefined = undefined;
 
     let textarea: HTMLTextAreaElement;
-    let dummyInput: HTMLInputElement;
+    let dummyInput = document.createElement("input") as HTMLInputElement;
 
     const resize = (textarea: HTMLTextAreaElement) => {
         const styles = getComputedStyle(textarea);
@@ -28,9 +28,13 @@
         resize(textarea);
 
         value = textarea.value;
-        dummyInput.value = value;
-        dummyInput.checkValidity();
-        textarea.setCustomValidity(dummyInput.validationMessage);
+
+        if (pattern) {
+            dummyInput.pattern = pattern;
+            dummyInput.value = value;
+            dummyInput.checkValidity();
+            textarea.setCustomValidity(dummyInput.validationMessage);
+        }
 
         $$restProps["on:input"]?.(e);
     };
@@ -46,7 +50,8 @@
     };
 </script>
 
-<input type="text" class="hidden" {pattern} {value} bind:this={dummyInput} />
+<svelte:window on:resize={() => resize(textarea)} />
+
 <textarea
     {...$$restProps}
     class="textarea resize-none overflow-hidden {$$restProps.class}"

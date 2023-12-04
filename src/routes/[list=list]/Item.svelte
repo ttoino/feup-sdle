@@ -4,9 +4,11 @@
     import WrappingInput from "$lib/components/WrappingInput.svelte";
     import type { ShoppingListItem } from "$lib/list";
     import id from "$lib/stores/id";
+    import { Icon, XMark } from "svelte-hero-icons";
 
     export let item: ShoppingListItem;
     export let persistList: () => unknown;
+    export let deleteThis: () => unknown;
 
     const changeName = (name?: string) => (e: Event) => {
         item.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
@@ -18,7 +20,7 @@
     const changeCount = () => (e: Event) => {
         const target = e.target as HTMLInputElement;
 
-        if (!target.checkValidity())
+        if (!target.checkValidity() || isNaN(target.valueAsNumber))
             return (target.valueAsNumber = item.count.value);
 
         item.count.inc($id!, target.valueAsNumber - item.count.value);
@@ -58,4 +60,10 @@
         on:change={changeCount()}
         value={item.count.value.toString()}
     />
+    <button
+        class="btn btn-square btn-outline h-auto btn-error join-item"
+        on:click={deleteThis}
+    >
+        <Icon src={XMark} class="h-6 w-6" />
+    </button>
 </li>

@@ -2,7 +2,6 @@ import AWMap from "./crdt/awmap";
 import CCounter from "./crdt/ccounter";
 import DotsContext from "./crdt/dotscontext";
 import MVRegister from "./crdt/mvregister";
-import { stringify, parse } from "devalue";
 import { v1 as uuidv1 } from "uuid";
 
 export class ShoppingListItem extends AWMap<
@@ -107,60 +106,70 @@ export default class ShoppingList {
         return this;
     }
 
-    serialize() {
-        console.log("Serializing:", this);
+    toJSON() {
+        const removeDots = <V>(value: { value: V }) => value.value;
 
-        try {
-            const serialized = stringify(this, {
-                ShoppingList: (value) =>
-                    value instanceof ShoppingList && {
-                        id: value.id,
-                        dots: value.dots,
-                        name: value.name,
-                        items: value.items,
-                    },
-                DotsContext: (value) =>
-                    value instanceof DotsContext && value.toJSON(),
-                MVRegister: (value) =>
-                    value instanceof MVRegister && value.toJSON(),
-                AWMap: (value) => value instanceof AWMap && value.toJSON(),
-                ShoppingListItem: (value) =>
-                    value instanceof ShoppingListItem && value.toJSON(),
-                CCounter: (value) =>
-                    value instanceof CCounter && value.toJSON(),
-            });
+        const removeItemDots = (
+            item: ReturnType<ShoppingListItem["toJSON"]>,
+        ) => ({
+            value: item.value,
+            map: item.map.map(
+                ([key, value]) =>
+                    [key, removeDots<(typeof value)["value"]>(value)] as const,
+            ),
+        });
 
-            console.log("Serialized:", serialized);
+        const removeItemsDots = (
+            items: ReturnType<AWMap<string, ShoppingListItem>["toJSON"]>,
+        ) => ({
+            value: items.value,
+            map: items.map.map(
+                ([key, value]) => [key, removeItemDots(value)] as const,
+            ),
+        });
 
-            return serialized;
-        } catch (e) {
-            console.error("Failed to serialize", this, e);
-            throw e;
-        }
+        return {
+            id: this.id,
+            name: removeDots(this.name.toJSON()),
+            items: removeItemsDots(this.items.toJSON()),
+            dots: this.dots.toJSON(),
+        };
+    }
+
+    static fromJSON(json: ReturnType<ShoppingList["toJSON"]>) {
+        const dots = new DotsContext(json.dots);
+
+        const name = new MVRegister<string>(json.name, dots);
+
+        const items = new AWMap<string, ShoppingListItem>(
+            json.items.value,
+            json.items.map.map(
+                ([key, value]) =>
+                    [
+                        key,
+                        new ShoppingListItem(
+                            value.value,
+                            value.map.map(
+                                ([key, value]) =>
+                                    [
+                                        key,
+                                        key === "name"
+                                            ? new MVRegister<string>(
+                                                  // @ts-expect-error: Typescript isn't smart enough to know the type of value
+                                                  value,
+                                                  dots,
+                                              )
+                                            : // @ts-expect-error: Typescript isn't smart enough to know the type of value
+                                              new CCounter(value, dots),
+                                    ] as const,
+                            ),
+                            dots,
+                        ),
+                    ] as const,
+            ),
+            dots,
+        );
+
+        return new ShoppingList(json.id, name, items, dots);
     }
 }
-
-export const deserialize = (serialized: string): ShoppingList => {
-    console.log("Deserializing", serialized);
-
-    const list = parse(serialized, {
-        ShoppingList: (value) => {
-            const list = ShoppingList.new(value.id, value.dots);
-
-            console.log("value.name", value.name);
-            console.log("list.name", list.name);
-
-            console.log("merged", list.name.merge(value.name));
-
-            return list;
-        },
-        DotsContext: (value) => new DotsContext(value),
-        MVRegister: (value) => new MVRegister(value.value, value.dots),
-        AWMap: (value) => new AWMap(value.keys, value.value, value.dots),
-        ShoppingListItem: (value) =>
-            new ShoppingListItem(value.keys, value.value, value.dots),
-        CCounter: (value) => new CCounter(value.value, value.dots),
-    });
-
-    return list;
-};

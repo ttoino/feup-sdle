@@ -20,6 +20,6 @@ export default class GCounter {
     }
 
     toJSON() {
-        return this._value;
+        return this.value;
     }
 }

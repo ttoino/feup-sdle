@@ -1,4 +1,4 @@
-import { deserialize } from "$lib/list";
+import ShoppingList from "$lib/list";
 import type { PageLoad } from "./$types";
 import { error } from "@sveltejs/kit";
 import localForage from "localforage";
@@ -17,8 +17,8 @@ export const load: PageLoad = async ({ params }) => {
     }
 
     const list = await localForage
-        .getItem<string>(listId)
-        .then((val) => deserialize(val!));
+        .getItem<ReturnType<ShoppingList["toJSON"]>>(listId)
+        .then((val) => ShoppingList.fromJSON(val!));
 
     return { list };
 };

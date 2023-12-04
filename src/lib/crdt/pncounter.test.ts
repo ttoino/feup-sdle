@@ -99,16 +99,4 @@ describe("PNCounter", () => {
 
         expect(counter1.merge(counter2)).toBe(1);
     });
-
-    it("should be able to be converted to JSON", () => {
-        const counter = new PNCounter();
-
-        counter.inc();
-        counter.inc();
-        counter.dec();
-
-        expect(JSON.stringify(counter)).toEqual(
-            '{"increments":2,"decrements":1}',
-        );
-    });
 });

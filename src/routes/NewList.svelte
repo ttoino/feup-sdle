@@ -20,9 +20,7 @@
         list.name.assign($id!, listName);
 
         try {
-            const serializedList = list.serialize();
-
-            await localforage.setItem(listId, serializedList);
+            await localforage.setItem(listId, list.toJSON());
 
             goto(`/${listId}`);
         } catch (encodeURIError) {
