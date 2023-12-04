@@ -16,16 +16,25 @@
 
     let { list } = data;
 
-    const persistList = async () =>
+    const persistList = async () => {
         await localforage.setItem(list.id, list.toJSON());
+        list=list; // HACK: Lists are not updating
+
+        // Do this to test fetch requests
+        fetch("https://postman-echo.com/post", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(list.toJSON()),
+        }).then((res) => res.json()).then(console.log).catch(console.error);
+    }
 
     const changeName = (name?: string) => async (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
-        persistList();
+        await persistList();
         list = list;
     };
 
-    const newItem = (name: string) => {
+    const newItem = async (name: string) => {
         list.newItem($id!, name);
 
         addNotification(`Added ${name}`, {
@@ -34,16 +43,16 @@
             timeout: 2000,
         });
 
-        persistList();
+        await persistList();
 
         // Reassigning list to itself to trigger reactivity
         list = list;
     };
 
-    const deleteItem = (item: string) => () => {
+    const deleteItem = (item: string) => async () => {
         list.items.remove(item);
 
-        persistList();
+        await persistList();
         list = list;
     };
 </script>

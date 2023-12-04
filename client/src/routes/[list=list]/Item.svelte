@@ -7,25 +7,28 @@
     import { Icon, XMark } from "svelte-hero-icons";
 
     export let item: ShoppingListItem;
-    export let persistList: () => unknown;
+    export let persistList: () => Promise<unknown>;
     export let deleteThis: () => unknown;
 
-    const changeName = (name?: string) => (e: Event) => {
+    const changeName = (name?: string) => async (e: Event) => {
         item.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
 
-        persistList();
+        await persistList();
         item = item;
     };
 
-    const changeCount = () => (e: Event) => {
+    const changeCount = () => async (e: Event) => {
         const target = e.target as HTMLInputElement;
 
-        if (!target.checkValidity() || isNaN(target.valueAsNumber))
-            return (target.valueAsNumber = item.count.value);
+        // Using target.valueAsNumber is being funky
+        const value = parseInt(target.value);
 
-        item.count.inc($id!, target.valueAsNumber - item.count.value);
+        if (!target.checkValidity())
+            return (target.value = item.count.value.toString());
 
-        persistList();
+        item.count.inc($id!, value - item.count.value);
+
+        await persistList();
         item = item;
     };
 </script>

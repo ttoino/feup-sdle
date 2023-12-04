@@ -19,6 +19,7 @@
                 <ShoppingList {shoppingList} {deleteShoppingList} />
             {/each}
         </ul>
+        <div class="divider"></div>
     {:else}
         <h1 class="text-4xl font-bold">
             You don't have any shopping lists yet
