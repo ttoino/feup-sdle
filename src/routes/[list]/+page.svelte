@@ -17,33 +17,49 @@
 
     let name = "";
 
+    const persistList = async () =>
+        await localforage.setItem(list.id, list.serialize());
+
     const changeName = (name?: string) => async (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
-        await localforage.setItem(list.id, list.serialize());
+        await persistList();
         list = list;
     };
 
-    const newItem = () => {
+    const newItem = async () => {
         list.newItem($id!, name);
+
+        addNotification(`Added ${name}`, {
+            type: "success",
+            dismissible: true,
+            timeout: 2000,
+        });
+
+        await persistList();
+
         // Reassigning list to itself to trigger reactivity
         list = list;
         name = "";
     };
 
     const changeItemName =
-        (item: ShoppingListItem, name?: string) => (e: Event) => {
+        (item: ShoppingListItem, name?: string) => async (e: Event) => {
             item.name.assign(
                 $id!,
                 name ?? (e.target as HTMLInputElement).value,
             );
+
+            await persistList();
             list = list;
         };
 
-    const changeItemCount = (item: ShoppingListItem) => (e: Event) => {
+    const changeItemCount = (item: ShoppingListItem) => async (e: Event) => {
         item.count.inc(
             $id!,
             parseInt((e.target as HTMLInputElement).value) - item.count.value,
         );
+
+        await persistList();
         list = list;
     };
 </script>

@@ -7,17 +7,21 @@
     import type { PageData } from "./$types";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
 
+    import id from "$lib/stores/id";
+    import { v1 as uuidV1 } from "uuid";
+
     export let data: PageData;
 
     const { shoppingLists } = data;
 
-    // TODO: make this general, not just for the first one
-    async function createFirstShoppingList(event: Event) {
+    async function createShoppingList(event: Event) {
         const data = new FormData(event.target as HTMLFormElement);
 
         const listName = data.get("name")! as string;
 
-        const list = ShoppingList.new(listName);
+        // TODO: is this right?
+        const list = ShoppingList.new(uuidV1());
+        list.name.assign($id!, listName);
 
         const listId = list.id;
 
@@ -52,7 +56,7 @@
     <form
         method="POST"
         class="contents"
-        on:submit|preventDefault={createFirstShoppingList}
+        on:submit|preventDefault={createShoppingList}
     >
         <label class="form-control">
             <WrappingInput

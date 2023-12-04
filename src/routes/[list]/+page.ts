@@ -14,6 +14,9 @@ export const load: PageLoad = async ({ params }) => {
     const listId = params.list;
 
     if (!await localForage.getItem(listId)) {
+
+        // TODO: fetch from remote
+
         throw error(404, `List with id "${listId}" not found`);
     }
 

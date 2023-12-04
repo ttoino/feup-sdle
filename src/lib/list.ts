@@ -109,34 +109,55 @@ export default class ShoppingList {
     }
 
     serialize() {
-        return stringify(this, {
-            ShoppingList: (value) => value instanceof ShoppingList && ({
-                id: value.id,
-                dots: value.dots,
-                name: value.name,
-            }),
-            DotsContext: (value) => value instanceof DotsContext && value.toJSON(),
-            MVRegister: (value) => value instanceof MVRegister && value.toJSON(),
-        });
+
+        console.log("Serializing:", this);
+
+        try {
+            const serialized = stringify(this, {
+                ShoppingList: (value) => value instanceof ShoppingList && ({
+                    id: value.id,
+                    dots: value.dots,
+                    name: value.name,
+                    items: value.items,
+                }),
+                DotsContext: (value) => value instanceof DotsContext && value.toJSON(),
+                MVRegister: (value) => value instanceof MVRegister && value.toJSON(),
+                AWMap: (value) => value instanceof AWMap && value.toJSON(),
+                ShoppingListItem: (value) => value instanceof ShoppingListItem && value.toJSON(),
+                CCounter: (value) => value instanceof CCounter && value.toJSON(),
+            });
+    
+            console.log("Serialized:", serialized);
+    
+            return serialized;
+        } catch (e) {
+            console.error("Failed to serialize", this, e);
+            throw e;
+        }
     }
 }
 
-
 export const deserialize = (serialized: string): ShoppingList => {
+    
+    console.log("Deserializing", serialized)
+    
     const list = parse(serialized, {
         ShoppingList: (value) => {
+
             const list = ShoppingList.new(value.id, value.dots)
         
             console.log("value.name", value.name)
             console.log("list.name", list.name)
             
             console.log("merged", list.name.merge(value.name));
-            list.name.assign(value.name.id, value.name.value.values().next().value); // HACK:
 
             return list;
         },
         DotsContext: (value) => new DotsContext(value),
         MVRegister: (value) => new MVRegister(value.value, value.dots),
+        AWMap: (value) => new AWMap(value.keys, value.value, value.dots),
+        ShoppingListItem: (value) => new ShoppingListItem(value.keys, value.value, value.dots),
+        CCounter: (value) => new CCounter(value.value, value.dots),
     });
 
     return list;
