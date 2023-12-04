@@ -1,33 +1,26 @@
 <script lang="ts">
     import type ShoppingList from "$lib/list";
     import { Icon, XMark } from "svelte-hero-icons";
-    import { goto } from "$app/navigation";
     import localforage from "localforage";
     import { addNotification } from "$lib/stores/notifications";
     import MVRegister from "$lib/components/MVRegister.svelte";
 
     export let shoppingList: ShoppingList;
+    export let deleteShoppingList: (id: string) => unknown;
 
-    async function deleteShoppingList() {
+    const deleteThis = async () => {
         console.log("Deleting shopping list", shoppingList.id);
 
         try {
             await localforage.removeItem(shoppingList.id);
-            addNotification(
-                `Deleted ${shoppingList.name.value.values().next().value}`,
-                {
-                    type: "success",
-                },
-            );
+            deleteShoppingList(shoppingList.id);
         } catch (error) {
             console.error("Error deleting shopping list", error);
             addNotification("Error deleting shopping list", {
                 type: "error",
             });
         }
-
-        goto("/");
-    }
+    };
 </script>
 
 <li class="join join-item join-horizontal">
@@ -50,7 +43,7 @@
     </div>
     <button
         class="btn btn-square btn-outline btn-error join-item z-40"
-        on:click|preventDefault={deleteShoppingList}
+        on:click|preventDefault={deleteThis}
     >
         <Icon src={XMark} class="h-6 w-6" />
     </button>

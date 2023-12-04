@@ -5,7 +5,10 @@
 
     export let data: PageData;
 
-    const { shoppingLists } = data;
+    let { shoppingLists } = data;
+
+    const deleteShoppingList = (id: string) =>
+        (shoppingLists = shoppingLists.filter((list) => list.id !== id));
 </script>
 
 <div class="mx-auto flex w-full max-w-screen-lg flex-col gap-4 self-stretch">
@@ -13,11 +16,11 @@
         <h1 class="text-4xl font-bold">Your shopping lists</h1>
         <ul class="join join-vertical">
             {#each shoppingLists as shoppingList}
-                <ShoppingList {shoppingList} />
+                <ShoppingList {shoppingList} {deleteShoppingList} />
             {/each}
         </ul>
     {:else}
-        <h1 class="text-center text-4xl font-bold">
+        <h1 class="text-4xl font-bold">
             You don't have any shopping lists yet
         </h1>
     {/if}

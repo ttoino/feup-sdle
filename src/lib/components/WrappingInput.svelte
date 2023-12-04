@@ -4,11 +4,14 @@
 
     interface $$Props extends HTMLTextareaAttributes {
         value?: string;
+        pattern?: string;
     }
 
-    export let value: $$Props["value"] = "";
+    export let value: string = "";
+    export let pattern: string = "";
 
     let textarea: HTMLTextAreaElement;
+    let dummyInput: HTMLInputElement;
 
     const resize = (textarea: HTMLTextAreaElement) => {
         const styles = getComputedStyle(textarea);
@@ -25,6 +28,9 @@
         resize(textarea);
 
         value = textarea.value;
+        dummyInput.value = value;
+        dummyInput.checkValidity();
+        textarea.setCustomValidity(dummyInput.validationMessage);
 
         $$restProps["on:input"]?.(e);
     };
@@ -40,6 +46,7 @@
     };
 </script>
 
+<input type="text" class="hidden" {pattern} {value} bind:this={dummyInput} />
 <textarea
     {...$$restProps}
     class="textarea resize-none overflow-hidden {$$restProps.class}"

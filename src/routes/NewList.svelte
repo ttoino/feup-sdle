@@ -13,8 +13,11 @@
     let listId = "";
 
     async function createShoppingList() {
-        const list = ShoppingList.new(listId || defaultId);
-        list.name.assign($id!, listName || defaultName);
+        listName = listName || defaultName;
+        listId = listId || defaultId;
+
+        const list = ShoppingList.new(listId);
+        list.name.assign($id!, listName);
 
         try {
             const serializedList = list.serialize();
@@ -49,8 +52,9 @@
         <WrappingInput
             name="id"
             id="id"
-            class="textarea-bordered"
+            class="textarea-bordered invalid:textarea-error"
             placeholder={defaultId}
+            pattern="[a-zA-Z0-9][a-zA-Z0-9\-_]*"
             bind:value={listId}
         />
     </label>
