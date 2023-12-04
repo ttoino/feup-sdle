@@ -2,7 +2,11 @@
     import type { HTMLTextareaAttributes } from "svelte/elements";
     import { onMount } from "svelte";
 
-    interface $$Props extends HTMLTextareaAttributes {}
+    interface $$Props extends HTMLTextareaAttributes {
+        value?: string;
+    }
+
+    export let value: $$Props["value"] = "";
 
     let textarea: HTMLTextAreaElement;
 
@@ -19,6 +23,8 @@
 
         textarea.value = textarea.value.replace(/\n/g, "");
         resize(textarea);
+
+        value = textarea.value;
 
         $$restProps["on:input"]?.(e);
     };
@@ -40,5 +46,5 @@
     on:input={onInput}
     on:keypress={onKeypress}
     on:change
-    bind:this={textarea}
-/>
+    bind:this={textarea}>{value}</textarea
+>

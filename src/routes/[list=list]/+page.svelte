@@ -1,32 +1,29 @@
 <script lang="ts">
-    import { Icon, Plus, Share } from "svelte-hero-icons";
+    import { Icon, Share } from "svelte-hero-icons";
     import id from "$lib/stores/id";
     import MVRegister from "$lib/components/MVRegister.svelte";
-    import type { ShoppingListItem } from "$lib/list";
     import type { PageData } from "./$types";
+    import Item from "./Item.svelte";
     import { copy } from "svelte-copy";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
-
     import { addNotification } from "$lib/stores/notifications";
-
     import localforage from "localforage";
+    import NewItem from "./NewItem.svelte";
 
     export let data: PageData;
 
-    let list = data.list;
-
-    let name = "";
+    let { list } = data;
 
     const persistList = async () =>
         await localforage.setItem(list.id, list.serialize());
 
     const changeName = (name?: string) => async (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
-        await persistList();
+        persistList();
         list = list;
     };
 
-    const newItem = async () => {
+    const newItem = (name: string) => {
         list.newItem($id!, name);
 
         addNotification(`Added ${name}`, {
@@ -35,31 +32,9 @@
             timeout: 2000,
         });
 
-        await persistList();
+        persistList();
 
         // Reassigning list to itself to trigger reactivity
-        list = list;
-        name = "";
-    };
-
-    const changeItemName =
-        (item: ShoppingListItem, name?: string) => async (e: Event) => {
-            item.name.assign(
-                $id!,
-                name ?? (e.target as HTMLInputElement).value,
-            );
-
-            await persistList();
-            list = list;
-        };
-
-    const changeItemCount = (item: ShoppingListItem) => async (e: Event) => {
-        item.count.inc(
-            $id!,
-            parseInt((e.target as HTMLInputElement).value) - item.count.value,
-        );
-
-        await persistList();
         list = list;
     };
 </script>
@@ -110,52 +85,12 @@
     </header>
 
     <ul class="join join-vertical">
-        {#each list.items.value as item}
-            <li class="join join-item join-horizontal items-stretch">
-                <MVRegister
-                    register={item[1].name}
-                    let:value
-                    defaultValue=""
-                    conflictClass="textarea join-item textarea-bordered flex-1"
-                >
-                    <WrappingInput
-                        class="join-item textarea-bordered flex-1"
-                        on:change={changeItemName(item[1])}
-                        {value}
-                    />
-
-                    <svelte:fragment slot="conflictValue" let:value>
-                        <button
-                            class="badge badge-outline badge-lg transition-colors hover:badge-primary hover:badge-outline"
-                            on:click={changeItemName(item[1], value)}
-                        >
-                            {value}
-                        </button>
-                    </svelte:fragment>
-                </MVRegister>
-                <input
-                    class="input join-item input-bordered h-auto min-w-[3rem] text-center"
-                    inputmode="numeric"
-                    on:change={changeItemCount(item[1])}
-                    value={item[1].count.value.toString()}
-                />
-            </li>
+        {#each list.items.value as [_, item]}
+            <Item {item} {persistList} />
         {/each}
     </ul>
 
-    <div class="join join-horizontal items-stretch">
-        <WrappingInput
-            bind:value={name}
-            class="join-item textarea-bordered flex-1"
-            placeholder="New item"
-        />
-        <button
-            on:click={newItem}
-            class="btn btn-square btn-outline btn-primary join-item h-auto"
-        >
-            <Icon src={Plus} class="h-6 w-6" />
-        </button>
-    </div>
+    <NewItem {newItem} />
 
     <div class="mockup-code w-full max-w-screen-lg">
         {#each JSON.stringify(list, null, 4).split("\n") as s}
