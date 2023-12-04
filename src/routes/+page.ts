@@ -1,8 +1,6 @@
-import type { PageLoad } from "./$types";
-
-import localForage from "localforage";
-
 import { deserialize } from "$lib/list";
+import type { PageLoad } from "./$types";
+import localForage from "localforage";
 
 export const load: PageLoad = async () => {
     const shoppingLists = [];

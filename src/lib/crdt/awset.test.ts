@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import AWSet from "./awset";
+import { describe, expect, it } from "vitest";
 
 const id1 = "a";
 const id2 = "b";

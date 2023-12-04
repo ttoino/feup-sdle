@@ -11,8 +11,8 @@
         "coverage": "vitest run --coverage",
         "lint": "eslint .",
         "lint:fix": "eslint --fix .",
-        "format": "prettier --plugin prettier-plugin-svelte --plugin prettier-plugin-tailwindcss .",
-        "format:fix": "prettier --plugin prettier-plugin-svelte --plugin prettier-plugin-tailwindcss --write ."
+        "format": "prettier --plugin prettier-plugin-svelte --plugin prettier-plugin-tailwindcss --plugin @trivago/prettier-plugin-sort-imports .",
+        "format:fix": "prettier --plugin prettier-plugin-svelte --plugin prettier-plugin-tailwindcss --plugin @trivago/prettier-plugin-sort-imports --write ."
     },
     "devDependencies": {
         "@fontsource/fira-mono": "^5.0.8",
@@ -22,6 +22,7 @@
         "@sveltejs/kit": "^1.27.6",
         "@tailwindcss/forms": "^0.5.7",
         "@tailwindcss/typography": "^0.5.10",
+        "@trivago/prettier-plugin-sort-imports": "^4.3.0",
         "@types/cookie": "^0.6.0",
         "@types/uuid": "^9.0.7",
         "@typescript-eslint/eslint-plugin": "^6.13.1",
@@ -32,6 +33,7 @@
         "eslint": "^8.55.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-svelte": "^2.35.1",
+        "localforage": "^1.10.0",
         "postcss": "^8.4.32",
         "postcss-load-config": "^5.0.0",
         "prettier": "^3.1.0",
@@ -48,9 +50,5 @@
         "vite": "^4.5.0",
         "vitest": "^0.34.6"
     },
-    "type": "module",
-    "dependencies": {
-        "devalue": "^4.3.2",
-        "localforage": "^1.10.0"
-    }
+    "type": "module"
 }

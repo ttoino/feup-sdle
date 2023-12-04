@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import GCounter from "./gcounter";
+import { describe, expect, it } from "vitest";
 
 describe("GCounter", () => {
     it("should be able to increment", () => {

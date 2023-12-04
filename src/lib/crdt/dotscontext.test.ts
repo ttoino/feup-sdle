@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import DotsContext from "./dotscontext";
+import { describe, expect, it } from "vitest";
 
 describe("DotsContext", () => {
     it("should be able to get next dot", () => {

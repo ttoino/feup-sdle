@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import "./set";
+import { describe, expect, it } from "vitest";
 
 describe("Set.isSubset", () => {
     it("should return true if a set is a subset of another set", () => {

@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import PNCounter from "./pncounter";
+import { describe, expect, it } from "vitest";
 
 describe("PNCounter", () => {
     it("should be able to increment", () => {

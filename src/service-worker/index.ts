@@ -2,7 +2,6 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="esnext" />
 /// <reference lib="webworker" />
-
 import { base, build, files, prerendered, version } from "$service-worker";
 
 const sw = self as unknown as ServiceWorkerGlobalScope;

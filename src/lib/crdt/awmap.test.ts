@@ -1,9 +1,9 @@
-import { describe, expect, it } from "vitest";
 import AWMap from "./awmap";
 import AWSet from "./awset";
 import CCounter from "./ccounter";
-import MVRegister from "./mvregister";
 import DotsContext from "./dotscontext";
+import MVRegister from "./mvregister";
+import { describe, expect, it } from "vitest";
 
 const id1 = "a";
 const id2 = "b";

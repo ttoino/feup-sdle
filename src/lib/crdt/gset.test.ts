@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import GSet from "./gset";
+import { describe, expect, it } from "vitest";
 
 describe("GSet", () => {
     it("should be able to add an element", () => {
