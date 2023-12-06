@@ -173,3 +173,5 @@ export default class ShoppingList {
         return new ShoppingList(json.id, name, items, dots);
     }
 }
+
+export type ShoppingListJSON = ReturnType<ShoppingList["toJSON"]>;

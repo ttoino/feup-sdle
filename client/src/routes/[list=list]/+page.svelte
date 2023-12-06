@@ -7,26 +7,41 @@
     import { copy } from "svelte-copy";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
     import { addNotification } from "$lib/stores/notifications";
-    import localforage from "localforage";
+    import localforage from "$lib/localforage";
     import NewItem from "./NewItem.svelte";
 
     import { base } from "$app/paths";
+    import ShoppingList from "$lib/list";
 
     export let data: PageData;
 
     let { list } = data;
 
+    localforage
+        .newObservable({
+            key: list.id,
+            crossTabNotification: true,
+        })
+        .subscribe({
+            next(value) {
+                list = ShoppingList.fromJSON(value.newValue);
+            },
+        });
+
     const persistList = async () => {
         await localforage.setItem(list.id, list.toJSON());
-        list=list; // HACK: Lists are not updating
+        list = list; // HACK: Lists are not updating
 
         // Do this to test fetch requests
         fetch("https://postman-echo.com/post", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(list.toJSON()),
-        }).then((res) => res.json()).then(console.log).catch(console.error);
-    }
+        })
+            .then((res) => res.json())
+            .then(console.log)
+            .catch(console.error);
+    };
 
     const changeName = (name?: string) => async (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);

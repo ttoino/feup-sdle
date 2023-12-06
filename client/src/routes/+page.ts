@@ -1,17 +1,19 @@
-import ShoppingList from "$lib/list";
+import { browser } from "$app/environment";
+import ShoppingList, { type ShoppingListJSON } from "$lib/list";
+import localforage from "$lib/localforage";
 import type { PageLoad } from "./$types";
-import localForage from "localforage";
 
 export const load: PageLoad = async () => {
-    const shoppingLists = [];
+    const shoppingLists = new Map<string, ShoppingList>();
 
-    const keys = await localForage.keys();
+    if (browser) {
+        const keys = await localforage.keys();
 
-    for (const key of keys) {
-        const value =
-            await localForage.getItem<ReturnType<ShoppingList["toJSON"]>>(key);
+        for (const key of keys) {
+            const value = await localforage.getItem<ShoppingListJSON>(key);
 
-        shoppingLists.push(ShoppingList.fromJSON(value!));
+            shoppingLists.set(key, ShoppingList.fromJSON(value!));
+        }
     }
 
     return { shoppingLists };

@@ -1,22 +1,49 @@
 <script lang="ts">
-    import ShoppingList from "./ShoppingList.svelte";
+    import ShoppingListComponent from "./ShoppingList.svelte";
     import type { PageData } from "./$types";
     import NewList from "./NewList.svelte";
+    import localforage from "$lib/localforage";
+    import ShoppingList from "$lib/list";
 
     export let data: PageData;
 
     let { shoppingLists } = data;
 
-    const deleteShoppingList = (id: string) =>
-        (shoppingLists = shoppingLists.filter((list) => list.id !== id));
+    localforage
+        .newObservable({
+            crossTabNotification: true,
+            setItem: true,
+            removeItem: true,
+        })
+        .subscribe({
+            next(value) {
+                if (value.methodName === "setItem") {
+                    shoppingLists.set(
+                        value.key,
+                        ShoppingList.fromJSON(value.newValue),
+                    );
+                } else if (value.methodName === "removeItem") {
+                    shoppingLists.delete(value.key);
+                } else if (value.methodName === "clear") {
+                    shoppingLists.clear();
+                }
+
+                shoppingLists = shoppingLists;
+            },
+        });
+
+    const deleteShoppingList = (id: string) => {
+        shoppingLists.delete(id);
+        shoppingLists = shoppingLists;
+    };
 </script>
 
 <div class="mx-auto flex w-full max-w-screen-lg flex-col gap-4 self-stretch">
-    {#if shoppingLists.length > 0}
+    {#if shoppingLists.size > 0}
         <h1 class="text-4xl font-bold">Your shopping lists</h1>
         <ul class="join join-vertical">
-            {#each shoppingLists as shoppingList}
-                <ShoppingList {shoppingList} {deleteShoppingList} />
+            {#each shoppingLists as [_, shoppingList]}
+                <ShoppingListComponent {shoppingList} {deleteShoppingList} />
             {/each}
         </ul>
         <div class="divider"></div>

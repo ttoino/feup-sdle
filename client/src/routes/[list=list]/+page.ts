@@ -1,24 +1,18 @@
-import ShoppingList from "$lib/list";
+import ShoppingList, { type ShoppingListJSON } from "$lib/list";
+import localforage from "$lib/localforage";
 import type { PageLoad } from "./$types";
 import { error } from "@sveltejs/kit";
-import localForage from "localforage";
 
 export const load: PageLoad = async ({ params }) => {
-    if (!params.list) {
-        throw error(400, "Missing list name");
-    }
+    const listObject = await localforage.getItem<ShoppingListJSON>(params.list);
 
-    const listId = params.list;
-
-    if (!(await localForage.getItem(listId))) {
+    if (!listObject) {
         // TODO: fetch from remote
 
-        throw error(404, `List with id "${listId}" not found`);
+        throw error(404, `List not found`);
     }
 
-    const list = await localForage
-        .getItem<ReturnType<ShoppingList["toJSON"]>>(listId)
-        .then((val) => ShoppingList.fromJSON(val!));
+    const list = ShoppingList.fromJSON(listObject);
 
     return { list };
 };
