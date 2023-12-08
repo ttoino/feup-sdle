@@ -27,9 +27,7 @@ class MVRegister<V : Any>(
     override fun merge(
         other: MVRegister<V>,
         mergeDots: Boolean,
-    ): Set<V> {
-        return set.merge(other.set, mergeDots)
-    }
+    ): Set<V> = set.merge(other.set, mergeDots)
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -40,9 +38,7 @@ class MVRegister<V : Any>(
         return set == other.set
     }
 
-    override fun hashCode(): Int {
-        return set.hashCode()
-    }
+    override fun hashCode(): Int = set.hashCode()
 
     override fun toString(): String = "MVRegister($set)"
 }

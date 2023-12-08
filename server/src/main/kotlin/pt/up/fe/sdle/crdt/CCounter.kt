@@ -63,9 +63,7 @@ class CCounter(
         return true
     }
 
-    override fun hashCode(): Int {
-        return set.hashCode()
-    }
+    override fun hashCode(): Int = set.hashCode()
 
     override fun toString(): String = "CCounter($set)"
 }

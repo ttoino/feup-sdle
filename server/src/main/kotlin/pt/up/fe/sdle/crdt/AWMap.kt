@@ -1,14 +1,10 @@
 package pt.up.fe.sdle.crdt
 
-import kotlinx.serialization.ExperimentalSerializationApi
-import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.*
 import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
-import kotlinx.serialization.serializer
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.buildSerialDescriptor
+import kotlinx.serialization.encoding.*
 
 interface DotsCRDT<T : Any> {
     fun merge(
@@ -122,26 +118,55 @@ class AWMapSerializer<K : Any, V : DotsCRDT<V>>(keySerializer: KSerializer<K>, v
 
     @Serializable
     @SerialName("AWMap")
-    data class AWMapSurrogate<K : Any, V : DotsCRDT<V>>(val keys: AWSet<K>, val map: Iterable<AWMapEntry<K, V>>)
+    data class AWMapSurrogate<K : Any, V : DotsCRDT<V>>(val keys: AWSet<K>, val map: List<AWMapEntry<K, V>>)
 }
 
 @Serializable(AWMapEntrySerializer::class)
 data class AWMapEntry<K : Any, V : DotsCRDT<V>>(val key: K, val value: V)
 
-@OptIn(ExperimentalSerializationApi::class)
-class AWMapEntrySerializer<K : Any, V : DotsCRDT<V>> : KSerializer<AWMapEntry<K, V>> {
-    private val delegateSerializer = ListSerializer(serializer<Any>())
-    override val descriptor: SerialDescriptor = SerialDescriptor("AWMapEntry", delegateSerializer.descriptor)
+@OptIn(ExperimentalSerializationApi::class, InternalSerializationApi::class)
+class AWMapEntrySerializer<K : Any, V : DotsCRDT<V>>(
+    private val keySerializer: KSerializer<K>,
+    private val valueSerializer: KSerializer<V>,
+) : KSerializer<AWMapEntry<K, V>> {
+    override val descriptor: SerialDescriptor =
+        buildSerialDescriptor("AWMapEntry", StructureKind.LIST) {
+            element("key", keySerializer.descriptor)
+            element("value", valueSerializer.descriptor)
+        }
 
     override fun serialize(
         encoder: Encoder,
         value: AWMapEntry<K, V>,
     ) {
-        encoder.encodeSerializableValue(delegateSerializer, listOf(value.key, value.value))
+        encoder.encodeCollection(descriptor, 2) {
+            encodeSerializableElement(descriptor, 0, keySerializer, value.key)
+            encodeSerializableElement(descriptor, 1, valueSerializer, value.value)
+        }
     }
 
-    override fun deserialize(decoder: Decoder): AWMapEntry<K, V> {
-        val value = decoder.decodeSerializableValue(delegateSerializer)
-        return AWMapEntry(value[0] as K, value[1] as V)
-    }
+    override fun deserialize(decoder: Decoder): AWMapEntry<K, V> =
+        decoder.decodeStructure(descriptor) {
+            decodeCollectionSize(descriptor)
+
+            var key: K? = null
+            var value: V? = null
+            var index: Int = decodeElementIndex(descriptor)
+
+            while (index != CompositeDecoder.DECODE_DONE) {
+                when (index) {
+                    0 -> key = decodeSerializableElement(descriptor, index, keySerializer)
+                    1 -> value = decodeSerializableElement(descriptor, index, valueSerializer)
+                    else -> error("Unknown index")
+                }
+
+                index = decodeElementIndex(descriptor)
+            }
+
+            if (key != null && value != null) {
+                AWMapEntry(key, value)
+            } else {
+                error("Could not decode AWMapEntry")
+            }
+        }
 }

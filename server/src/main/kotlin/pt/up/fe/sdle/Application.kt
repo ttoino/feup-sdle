@@ -9,6 +9,7 @@ import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.callid.*
 import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
+import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
 import kotlinx.serialization.json.Json
@@ -53,6 +54,13 @@ fun Application.module() {
     }
     install(DefaultHeaders) {
         header("X-Engine", "Ktor") // will send this header with each response
+    }
+    install(CORS) {
+        anyHost()
+        allowHeadersPrefixed("")
+//        allowHost("0.0.0.0:5173")
+        allowHeader(HttpHeaders.ContentType)
+//        allowHeader(HttpHeaders.Accept)
     }
 
     configureRouting()
