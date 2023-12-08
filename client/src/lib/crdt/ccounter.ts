@@ -24,7 +24,7 @@ export default class CCounter {
     }
 
     inc(id: string, v = 1): number {
-        let val = undefined;
+        let val = 0;
 
         this.set.internalValue.forEach((d) => {
             if (d[0] !== id) return;
@@ -33,7 +33,6 @@ export default class CCounter {
             val = d[2];
         });
 
-        val ??= 0;
         val += v;
 
         this.set.add(id, val);
