@@ -1,5 +1,6 @@
 import AWSet from "./awset";
 import DotsContext from "./dotscontext";
+import zod from "zod";
 
 type DottedValue = [string, number, number];
 
@@ -12,7 +13,7 @@ class PermissiveAWSet extends AWSet<number> {
 export default class CCounter {
     private set: PermissiveAWSet;
 
-    static schema = PermissiveAWSet.schema;
+    static readonly schema = () => PermissiveAWSet.schema(zod.number());
 
     constructor(
         value: Iterable<DottedValue> | Set<DottedValue> = [],

@@ -4,7 +4,7 @@ import DotsContext from "./dotscontext";
 export default class MVRegister<V> {
     private set: AWSet<V>;
 
-    static schema = AWSet.schema;
+    static readonly schema = AWSet.schema;
 
     constructor(
         value: ConstructorParameters<typeof AWSet<V>>[0] = [],

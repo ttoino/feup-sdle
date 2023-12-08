@@ -2,7 +2,6 @@ import AWSet from "./awset";
 import DotsContext from "./dotscontext";
 import zod from "zod";
 
-
 interface DotsCRDT {
     merge(other: this, mergeDots: boolean): void;
     toJSON(): unknown;
@@ -13,10 +12,14 @@ export default class AWMap<K, V extends DotsCRDT> {
     private map: Map<K, V>;
     private _dots: DotsContext;
 
-    static schema = zod.object({
-        keys: AWSet.schema,
-        map: zod.array(zod.tuple([zod.any(), zod.any()])),
-    });
+    static readonly schema = (
+        keyType: zod.ZodSchema,
+        valueType: zod.ZodSchema,
+    ) =>
+        zod.object({
+            keys: AWSet.schema(keyType),
+            map: zod.array(zod.tuple([keyType, valueType])),
+        });
 
     constructor(
         set: ConstructorParameters<typeof AWSet<K>>[0] = [],

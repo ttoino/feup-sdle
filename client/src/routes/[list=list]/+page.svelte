@@ -32,7 +32,6 @@
 
     const persistList = async () => {
         await localforage.setItem(list.id, list.toJSON());
-        list = list; // HACK: Lists are not updating
 
         // Do this to test fetch requests
         // TODO: do not run this every time we sync a list locally,m that is obviously bad

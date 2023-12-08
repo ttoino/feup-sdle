@@ -8,7 +8,8 @@ export default class AWSet<V> {
     protected _value: Set<DottedValue<V>>;
     protected dots: DotsContext;
 
-    static schema = zod.array(zod.tuple([zod.string(), zod.number(), zod.any()]));
+    static readonly schema = (valueType: zod.ZodSchema = zod.any()) =>
+        zod.array(zod.tuple([zod.string(), zod.number(), valueType]));
 
     constructor(
         value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],
