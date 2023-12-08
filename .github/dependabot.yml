@@ -1,7 +1,11 @@
 version: 2
 updates:
-  - directory: /
+  - directory: /client
     package-ecosystem: npm
+    schedule:
+      interval: daily
+  - directory: /server
+    package-ecosystem: gradle
     schedule:
       interval: daily
   - directory: /
