@@ -3,6 +3,7 @@ package pt.up.fe.sdle.crdt
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
@@ -76,6 +77,10 @@ class AWSet<V : Any>(
     override fun toString(): String = "AWSet(${_value}, $dots)"
 }
 
+
+/**
+ *
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class AWSetSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<AWSet<V>> {
     private val delegateSerializer = SetSerializer(DottedValue.serializer(valueSerializer))
@@ -92,4 +97,9 @@ class AWSetSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<AW
         val surrogate = decoder.decodeSerializableValue(delegateSerializer)
         return AWSet(surrogate.toMutableSet())
     }
+
+    @Serializable
+    @SerialName("AWSet")
+    data class AWSetSurrogate<V : Any>(val value: Iterable<DottedValue<V>>, val dots: DotsContext)
+
 }

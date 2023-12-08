@@ -2,6 +2,9 @@ package pt.up.fe.sdle.crdt
 
 import kotlinx.serialization.Serializable
 
+/**
+ *
+ */
 @Serializable
 class PNCounter(
     private val increments: GCounter = GCounter(),

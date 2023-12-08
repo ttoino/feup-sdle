@@ -10,5 +10,13 @@ import io.ktor.server.routing.*
 fun Application.configureRouting() {
     routing {
         loadHealthCheck()
+
+        route("/cluster") {
+            loadHealthCheck {
+                "cluster"
+            }
+
+            loadClusterManagementRoutes()
+        }
     }
 }

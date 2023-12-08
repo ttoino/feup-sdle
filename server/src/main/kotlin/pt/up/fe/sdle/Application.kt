@@ -37,7 +37,7 @@ fun Application.module() {
         }
     }
     install(CachingHeaders) {
-        options { call, outgoingContent ->
+        options { _, outgoingContent ->
             when (outgoingContent.contentType?.withoutParameters()) {
                 ContentType.Text.CSS -> CachingOptions(CacheControl.MaxAge(maxAgeSeconds = 24 * 60 * 60))
                 else -> null
@@ -45,12 +45,7 @@ fun Application.module() {
         }
     }
     install(ContentNegotiation) {
-        json(
-            Json {
-                prettyPrint = true
-                isLenient = true
-            },
-        )
+        json()
     }
     install(DefaultHeaders) {
         header("X-Engine", "Ktor") // will send this header with each response
