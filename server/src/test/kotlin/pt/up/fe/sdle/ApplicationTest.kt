@@ -1,4 +1,3 @@
 package pt.up.fe.sdle
 
-class ApplicationTest {
-}
+class ApplicationTest

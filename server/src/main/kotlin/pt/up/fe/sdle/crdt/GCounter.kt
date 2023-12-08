@@ -1,7 +1,7 @@
 package pt.up.fe.sdle.crdt
 
 class GCounter(
-    private var value: Int = 0
+    private var value: Int = 0,
 ) {
     fun getValue() = value
 
@@ -30,5 +30,5 @@ class GCounter(
         return value
     }
 
-    override fun toString(): String = "GCounter(${value})"
+    override fun toString(): String = "GCounter($value)"
 }

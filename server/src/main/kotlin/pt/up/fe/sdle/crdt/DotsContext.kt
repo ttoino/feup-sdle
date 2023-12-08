@@ -13,7 +13,10 @@ class DotsContext(
         return Pair(id, next)
     }
 
-    fun has(id: String, dot: Int): Boolean = max(id) >= dot
+    fun has(
+        id: String,
+        dot: Int,
+    ): Boolean = max(id) >= dot
 
     fun has(dot: Dot): Boolean = has(dot.first, dot.second)
 
@@ -35,5 +38,5 @@ class DotsContext(
 
     override fun hashCode(): Int = dots.hashCode()
 
-    override fun toString(): String = "DotsContext(${dots})"
+    override fun toString(): String = "DotsContext($dots)"
 }

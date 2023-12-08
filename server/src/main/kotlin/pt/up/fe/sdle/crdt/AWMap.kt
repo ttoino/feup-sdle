@@ -1,29 +1,39 @@
 package pt.up.fe.sdle.crdt
 
-interface DotsCRDT<T: DotsCRDT<T>> {
-    fun merge(other: T, mergeDots: Boolean = true): Any
+interface DotsCRDT<T : DotsCRDT<T>> {
+    fun merge(
+        other: T,
+        mergeDots: Boolean = true,
+    ): Any
 }
 
-class AWMap<K, V: DotsCRDT<V>>(
+class AWMap<K, V : DotsCRDT<V>>(
     val _set: AWSet<K>,
     val map: MutableMap<K, V> = mutableMapOf(),
     val _dots: DotsContext = DotsContext(),
-): DotsCRDT<AWMap<K, V>> {
+) : DotsCRDT<AWMap<K, V>> {
     val value: Map<K, V> get() = map
     val dots get() = _dots
 
-    constructor(dots: DotsContext = DotsContext()): this(AWSet(dots), mutableMapOf(), dots)
+    constructor(dots: DotsContext = DotsContext()) : this(AWSet(dots), mutableMapOf(), dots)
 
     fun get(key: K): V? = map[key]
 
-    fun set(id: String, key: K, value: V, mergeDots: Boolean = true): Map<K, V> {
-        if (key !in _set.value)
+    fun set(
+        id: String,
+        key: K,
+        value: V,
+        mergeDots: Boolean = true,
+    ): Map<K, V> {
+        if (key !in _set.value) {
             _set.add(id, key)
+        }
 
-        if (key !in map)
+        if (key !in map) {
             map[key] = value
-        else
+        } else {
             map[key]!!.merge(value, mergeDots)
+        }
 
         return this.value
     }
@@ -34,16 +44,21 @@ class AWMap<K, V: DotsCRDT<V>>(
         return this.value
     }
 
-    override fun merge(other: AWMap<K, V>, mergeDots: Boolean): Map<K, V> {
+    override fun merge(
+        other: AWMap<K, V>,
+        mergeDots: Boolean,
+    ): Map<K, V> {
         _set.merge(other._set, false)
 
         for (k in map.keys)
-            if (k !in _set.value)
+            if (k !in _set.value) {
                 map.remove(k)
+            }
 
         for ((k, v) in other.map)
-            if (k in _set.value)
+            if (k in _set.value) {
                 set("", k, v, false)
+            }
 
         if (mergeDots) _dots.merge(other._dots)
 
@@ -70,5 +85,5 @@ class AWMap<K, V: DotsCRDT<V>>(
         return result
     }
 
-    override fun toString(): String = "AWMap(${_set}, ${map}, ${_dots})"
+    override fun toString(): String = "AWMap(${_set}, $map, ${_dots})"
 }

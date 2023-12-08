@@ -2,18 +2,23 @@ package pt.up.fe.sdle.crdt
 
 typealias DottedValue<V> = Pair<Dot, V>
 
-private fun <V> f(a: Set<DottedValue<V>>, b: DotsContext): Set<DottedValue<V>> =
-    a.filter { !b.has(it.first) }.toSet()
+private fun <V> f(
+    a: Set<DottedValue<V>>,
+    b: DotsContext,
+): Set<DottedValue<V>> = a.filter { !b.has(it.first) }.toSet()
 
 class AWSet<V>(
     var _value: MutableSet<DottedValue<V>> = mutableSetOf(),
     val dots: DotsContext = DotsContext(),
-): DotsCRDT<AWSet<V>> {
+) : DotsCRDT<AWSet<V>> {
     val value: Set<V> get() = _value.map { it.second }.toSet()
 
-    constructor(dots: DotsContext): this(mutableSetOf(), dots)
+    constructor(dots: DotsContext) : this(mutableSetOf(), dots)
 
-    fun add(id: String, v: V): Set<V> {
+    fun add(
+        id: String,
+        v: V,
+    ): Set<V> {
         val dot = dots.next(id)
         _value.add(Pair(dot, v))
         return value
@@ -29,7 +34,10 @@ class AWSet<V>(
         return value
     }
 
-    override fun merge(other: AWSet<V>, mergeDots: Boolean): Set<V> {
+    override fun merge(
+        other: AWSet<V>,
+        mergeDots: Boolean,
+    ): Set<V> {
         val a = f(_value, other.dots)
         val b = f(other._value, dots)
 
@@ -58,5 +66,5 @@ class AWSet<V>(
         return result
     }
 
-    override fun toString(): String = "AWSet(${_value}, ${dots})"
+    override fun toString(): String = "AWSet(${_value}, $dots)"
 }

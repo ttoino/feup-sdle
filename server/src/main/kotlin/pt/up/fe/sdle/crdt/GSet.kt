@@ -1,7 +1,7 @@
 package pt.up.fe.sdle.crdt
 
 class GSet<V>(
-    private val value: MutableSet<V> = mutableSetOf()
+    private val value: MutableSet<V> = mutableSetOf(),
 ) {
     fun getValue(): Set<V> = value
 
@@ -28,5 +28,5 @@ class GSet<V>(
         return value.hashCode()
     }
 
-    override fun toString(): String = "GSet(${value})"
+    override fun toString(): String = "GSet($value)"
 }

@@ -1,19 +1,25 @@
 package pt.up.fe.sdle.crdt
 
 class MVRegister<V>(
-    private val set: AWSet<V> = AWSet()
-): DotsCRDT<MVRegister<V>> {
+    private val set: AWSet<V> = AWSet(),
+) : DotsCRDT<MVRegister<V>> {
     val value get() = set.value
 
-    constructor(set: MutableSet<DottedValue<V>>, dots: DotsContext): this(AWSet(set, dots))
-    constructor(dots: DotsContext): this(mutableSetOf(), dots)
+    constructor(set: MutableSet<DottedValue<V>>, dots: DotsContext) : this(AWSet(set, dots))
+    constructor(dots: DotsContext) : this(mutableSetOf(), dots)
 
-    fun assign(id: String, v: V): Set<V> {
+    fun assign(
+        id: String,
+        v: V,
+    ): Set<V> {
         set.reset()
         return set.add(id, v)
     }
 
-    override fun merge(other: MVRegister<V>, mergeDots: Boolean): Set<V> {
+    override fun merge(
+        other: MVRegister<V>,
+        mergeDots: Boolean,
+    ): Set<V> {
         return set.merge(other.set, mergeDots)
     }
 
@@ -30,5 +36,5 @@ class MVRegister<V>(
         return set.hashCode()
     }
 
-    override fun toString(): String = "MVRegister(${set})"
+    override fun toString(): String = "MVRegister($set)"
 }

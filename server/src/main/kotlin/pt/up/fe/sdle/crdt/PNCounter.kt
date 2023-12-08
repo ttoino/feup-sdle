@@ -4,8 +4,8 @@ class PNCounter(
     private val increments: GCounter = GCounter(),
     private val decrements: GCounter = GCounter(),
 ) {
-    constructor(increments: Int = 0, decrements: Int = 0)
-        : this(GCounter(increments), GCounter(decrements))
+    constructor(increments: Int = 0, decrements: Int = 0) :
+        this(GCounter(increments), GCounter(decrements))
 
     fun getValue(): Int {
         return increments.getValue() - decrements.getValue()
@@ -45,5 +45,5 @@ class PNCounter(
         return result
     }
 
-    override fun toString(): String = "AWMap(${increments}, ${decrements})"
+    override fun toString(): String = "AWMap($increments, $decrements)"
 }
