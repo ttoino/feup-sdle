@@ -3,10 +3,15 @@ import CCounter from "./crdt/ccounter";
 import DotsContext from "./crdt/dotscontext";
 import MVRegister from "./crdt/mvregister";
 import { v1 as uuidv1 } from "uuid";
-
+import zod from "zod";
 export class ShoppingListItem {
     readonly name: MVRegister<string>;
     readonly count: CCounter;
+
+    static schema = zod.object({
+        name: MVRegister.schema,
+        count: CCounter.schema,
+    });
 
     constructor(name: MVRegister<string>, count: CCounter) {
         this.name = name;
@@ -49,6 +54,13 @@ export default class ShoppingList {
     readonly name: MVRegister<string>;
     readonly items: AWMap<string, ShoppingListItem>;
     readonly dots: DotsContext;
+
+    static schema = zod.object({
+        id: zod.string(),
+        name: MVRegister.schema,
+        items: AWMap.schema,
+        dots: DotsContext.schema,
+    });
 
     constructor(
         id: string,

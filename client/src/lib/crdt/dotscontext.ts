@@ -1,5 +1,9 @@
+import zod from "zod";
+
 export default class DotsContext {
     private dots: Map<string, number>;
+
+    static schema = zod.record(zod.number());
 
     constructor(
         dots:

@@ -1,11 +1,14 @@
 import "$lib/set";
 import DotsContext from "./dotscontext";
+import zod from "zod";
 
 type DottedValue<V> = [string, number, V];
 
 export default class AWSet<V> {
     protected _value: Set<DottedValue<V>>;
     protected dots: DotsContext;
+
+    static schema = zod.array(zod.tuple([zod.string(), zod.number(), zod.any()]));
 
     constructor(
         value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],

@@ -12,7 +12,9 @@
 
     import { base } from "$app/paths";
     import ShoppingList from "$lib/list";
-    
+
+    import { sync } from "$lib/service/list";
+
     export let data: PageData;
 
     let { list } = data;
@@ -33,23 +35,19 @@
         list = list; // HACK: Lists are not updating
 
         // Do this to test fetch requests
-        fetch("https://postman-echo.com/post", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(list.toJSON()),
-        })
-            .then((res) => res.json())
-            .then(console.log)
+        // TODO: do not run this every time we sync a list locally,m that is obviously bad
+        await sync(list)
+            .then(() => console.log("Persisted list"))
             .catch(console.error);
     };
 
-    const changeName = (name?: string) => async (e: Event) => {
+    const changeName = (name?: string) => (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
-        await persistList();
+        persistList();
         list = list;
     };
 
-    const newItem = async (name: string) => {
+    const newItem = (name: string) => {
         list.newItem($id!, name);
 
         addNotification(`Added ${name}`, {
@@ -58,16 +56,16 @@
             timeout: 2000,
         });
 
-        await persistList();
+        persistList();
 
         // Reassigning list to itself to trigger reactivity
         list = list;
     };
 
-    const deleteItem = (item: string) => async () => {
+    const deleteItem = (item: string) => () => {
         list.items.remove(item);
 
-        await persistList();
+        persistList();
         list = list;
     };
 </script>
@@ -90,7 +88,7 @@
 
                 <svelte:fragment slot="conflictValue" let:value>
                     <button
-                        class="badge badge-outline badge-lg hover:badge-primary hover:badge-outline transition-colors"
+                        class="badge badge-outline badge-lg transition-colors hover:badge-primary hover:badge-outline"
                         on:click={changeName(value)}
                     >
                         {value}

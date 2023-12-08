@@ -1,5 +1,6 @@
 package pt.up.fe.sdle.api
 
+import io.ktor.http.*
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -7,7 +8,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 
 /**
- * [HealthCheck] structure for responding to health-check request
+ * [HealthCheck] structure for responding to health-check requests.
  */
 @Serializable
 data class HealthCheck(
@@ -41,7 +42,7 @@ fun Route.loadHealthCheck(messageProducer: (ApplicationCall) -> String) {
 
         call.application.environment.log.info("Responding to health check with custom message: \"%s\"".format(payload))
 
-        call.respond(payload)
+        call.respond(HttpStatusCode.OK, payload)
     }
 }
 
@@ -50,6 +51,6 @@ fun Route.loadHealthCheck(messageProducer: (ApplicationCall) -> String) {
  */
 fun Route.loadHealthCheck() {
     get {
-        call.respond(HealthCheck(online = true, path = call.request.path(), message = null))
+        call.respond(HttpStatusCode.OK, HealthCheck(online = true, path = call.request.path(), message = null))
     }
 }

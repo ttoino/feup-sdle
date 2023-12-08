@@ -53,5 +53,8 @@
         "vitest": "^0.34.6",
         "zen-observable": "^0.10.0"
     },
-    "type": "module"
+    "type": "module",
+    "dependencies": {
+        "zod": "^3.22.4"
+    }
 }

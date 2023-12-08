@@ -12,6 +12,8 @@ class PermissiveAWSet extends AWSet<number> {
 export default class CCounter {
     private set: PermissiveAWSet;
 
+    static schema = PermissiveAWSet.schema;
+
     constructor(
         value: Iterable<DottedValue> | Set<DottedValue> = [],
         dots = new DotsContext(),
