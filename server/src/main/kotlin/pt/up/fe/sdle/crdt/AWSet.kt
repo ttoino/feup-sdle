@@ -1,8 +1,9 @@
 package pt.up.fe.sdle.crdt
 
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.KSerializer
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.SetSerializer
 import kotlinx.serialization.descriptors.SerialDescriptor
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
@@ -15,7 +16,7 @@ private fun <V : Any> f(
 @Serializable(AWSetSerializer::class)
 class AWSet<V : Any>(
     var _value: MutableSet<DottedValue<V>> = mutableSetOf(),
-    val dots: DotsContext = DotsContext(),
+    var dots: DotsContext = DotsContext(),
 ) : DotsCRDT<AWSet<V>> {
     val value: Set<V> get() = _value.map { it.value }.toSet()
 
@@ -75,24 +76,20 @@ class AWSet<V : Any>(
     override fun toString(): String = "AWSet(${_value}, $dots)"
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 class AWSetSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<AWSet<V>> {
-    private val delegateSerializer = AWSetSurrogate.serializer(valueSerializer)
-    override val descriptor: SerialDescriptor = delegateSerializer.descriptor
+    private val delegateSerializer = SetSerializer(DottedValue.serializer(valueSerializer))
+    override val descriptor: SerialDescriptor = SerialDescriptor("AWSet", delegateSerializer.descriptor)
 
     override fun serialize(
         encoder: Encoder,
         value: AWSet<V>,
     ) {
-        val surrogate = AWSetSurrogate(value._value, value.dots)
-        encoder.encodeSerializableValue(delegateSerializer, surrogate)
+        encoder.encodeSerializableValue(delegateSerializer, value._value)
     }
 
     override fun deserialize(decoder: Decoder): AWSet<V> {
         val surrogate = decoder.decodeSerializableValue(delegateSerializer)
-        return AWSet(surrogate.value.toMutableSet(), surrogate.dots)
+        return AWSet(surrogate.toMutableSet())
     }
-
-    @Serializable
-    @SerialName("AWSet")
-    data class AWSetSurrogate<V : Any>(val value: Iterable<DottedValue<V>>, val dots: DotsContext)
 }

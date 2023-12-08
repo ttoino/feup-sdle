@@ -49,7 +49,7 @@ class MVRegister<V : Any>(
 
 @OptIn(ExperimentalSerializationApi::class)
 class MVRegisterSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<MVRegister<V>> {
-    private val delegateSerializer = AWSetSerializer<V>(valueSerializer)
+    private val delegateSerializer = AWSetSerializer(valueSerializer)
     override val descriptor: SerialDescriptor = SerialDescriptor("MVRegister", delegateSerializer.descriptor)
 
     override fun serialize(

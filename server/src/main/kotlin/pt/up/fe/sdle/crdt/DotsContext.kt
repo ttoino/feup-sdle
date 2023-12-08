@@ -47,6 +47,7 @@ class DotsContext(
     override fun toString(): String = "DotsContext($dots)"
 }
 
+@OptIn(ExperimentalSerializationApi::class)
 object DotsContextSerializer : KSerializer<DotsContext> {
     private val delegateSerializer = MapSerializer(serializer<String>(), serializer<Int>())
     override val descriptor: SerialDescriptor = SerialDescriptor("DotsContext", delegateSerializer.descriptor)
@@ -86,7 +87,7 @@ object DotSerializer : KSerializer<Dot> {
 }
 
 @Serializable(DottedValueSerializer::class)
-data class DottedValue<V : Any>(val dot: Dot, val value: V) {
+data class DottedValue<out V : Any>(val dot: Dot, val value: V) {
     val id get() = dot.id
     val n get() = dot.n
 

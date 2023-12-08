@@ -10,18 +10,20 @@ import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
 import kotlinx.serialization.serializer
 
-interface DotsCRDT<T : DotsCRDT<T>> {
+interface DotsCRDT<T : Any> {
     fun merge(
         other: T,
         mergeDots: Boolean = true,
     ): Any
 }
 
+abstract class BaseDotsCRDT<T : DotsCRDT<T>> : DotsCRDT<T>
+
 @Serializable(AWMapSerializer::class)
 class AWMap<K : Any, V : DotsCRDT<V>>(
     val _set: AWSet<K>,
     val map: MutableMap<K, V> = mutableMapOf(),
-    val _dots: DotsContext = DotsContext(),
+    var _dots: DotsContext = DotsContext(),
 ) : DotsCRDT<AWMap<K, V>> {
     val value: Map<K, V> get() = map
 
@@ -108,19 +110,19 @@ class AWMapSerializer<K : Any, V : DotsCRDT<V>>(keySerializer: KSerializer<K>, v
         encoder: Encoder,
         value: AWMap<K, V>,
     ) {
-        val surrogate = AWMapSurrogate(value._set, value.map.map { AWMapEntry(it.key, it.value) }, value.dots)
+        val surrogate = AWMapSurrogate(value._set, value.map.map { AWMapEntry(it.key, it.value) })
         encoder.encodeSerializableValue(delegateSerializer, surrogate)
     }
 
     override fun deserialize(decoder: Decoder): AWMap<K, V> {
         val surrogate = decoder.decodeSerializableValue(delegateSerializer)
         val map = surrogate.map.map { Pair(it.key, it.value) }.toTypedArray()
-        return AWMap(surrogate.value, mutableMapOf(*map), surrogate.dots)
+        return AWMap(surrogate.keys, mutableMapOf(*map))
     }
 
     @Serializable
     @SerialName("AWMap")
-    data class AWMapSurrogate<K : Any, V : DotsCRDT<V>>(val value: AWSet<K>, val map: Iterable<AWMapEntry<K, V>>, val dots: DotsContext)
+    data class AWMapSurrogate<K : Any, V : DotsCRDT<V>>(val keys: AWSet<K>, val map: Iterable<AWMapEntry<K, V>>)
 }
 
 @Serializable(AWMapEntrySerializer::class)

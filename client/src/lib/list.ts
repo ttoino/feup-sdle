@@ -4,61 +4,43 @@ import DotsContext from "./crdt/dotscontext";
 import MVRegister from "./crdt/mvregister";
 import { v1 as uuidv1 } from "uuid";
 
-export class ShoppingListItem extends AWMap<
-    "name" | "count",
-    MVRegister<string> | CCounter
-> {
+export class ShoppingListItem {
+    readonly name: MVRegister<string>;
+    readonly count: CCounter;
+
+    constructor(name: MVRegister<string>, count: CCounter) {
+        this.name = name;
+        this.count = count;
+    }
+
+    merge(other: ShoppingListItem, mergeDots = true) {
+        this.name.merge(other.name, false);
+        this.count.merge(other.count, false);
+
+        if (mergeDots) {
+            this.name.merge(other.name, true);
+            this.count.merge(other.count, true);
+        }
+
+        return this;
+    }
+
+    toJSON() {
+        return {
+            name: this.name.toJSON(),
+            count: this.count.toJSON(),
+        };
+    }
+
     static new(id: string, name: string, dots: DotsContext) {
         const nameRegister = new MVRegister<string>([], dots);
         nameRegister.assign(id, name);
 
         const count = new CCounter([], dots);
 
-        const item = new ShoppingListItem([], [], dots);
-
-        item.set(id, "name", nameRegister);
-        item.set(id, "count", count);
+        const item = new ShoppingListItem(nameRegister, count);
 
         return item;
-    }
-
-    get name() {
-        return this.get("name") as MVRegister<string>;
-    }
-
-    get count() {
-        return this.get("count") as CCounter;
-    }
-
-    get(key: "name"): MVRegister<string>;
-    get(key: "count"): CCounter;
-    override get(key: "name" | "count") {
-        return super.get(key);
-    }
-
-    set(
-        id: string,
-        key: "name",
-        value: MVRegister<string>,
-    ): ReadonlyMap<"name" | "count", MVRegister<string> | CCounter>;
-    set(
-        id: string,
-        key: "count",
-        value: CCounter,
-    ): ReadonlyMap<"name" | "count", MVRegister<string> | CCounter>;
-    override set(
-        id: string,
-        key: "name" | "count",
-        value: MVRegister<string> | CCounter,
-    ) {
-        return super.set(id, key, value);
-    }
-
-    remove(never: never): never;
-    override remove(
-        _key: "name" | "count",
-    ): ReadonlyMap<"name" | "count", MVRegister<string> | CCounter> {
-        throw new Error("Method not allowed");
     }
 }
 
@@ -100,38 +82,18 @@ export default class ShoppingList {
     }
 
     merge(other: ShoppingList) {
-        this.name.merge(other.name);
-        this.items.merge(other.items);
+        this.name.merge(other.name, false);
+        this.items.merge(other.items, false);
+        this.dots.merge(other.dots);
 
         return this;
     }
 
     toJSON() {
-        const removeDots = <V>(value: { value: V }) => value.value;
-
-        const removeItemDots = (
-            item: ReturnType<ShoppingListItem["toJSON"]>,
-        ) => ({
-            value: item.value,
-            map: item.map.map(
-                ([key, value]) =>
-                    [key, removeDots<(typeof value)["value"]>(value)] as const,
-            ),
-        });
-
-        const removeItemsDots = (
-            items: ReturnType<AWMap<string, ShoppingListItem>["toJSON"]>,
-        ) => ({
-            value: items.value,
-            map: items.map.map(
-                ([key, value]) => [key, removeItemDots(value)] as const,
-            ),
-        });
-
         return {
             id: this.id,
-            name: removeDots(this.name.toJSON()),
-            items: removeItemsDots(this.items.toJSON()),
+            name: this.name.toJSON(),
+            items: this.items.toJSON(),
             dots: this.dots.toJSON(),
         };
     }
@@ -142,28 +104,14 @@ export default class ShoppingList {
         const name = new MVRegister<string>(json.name, dots);
 
         const items = new AWMap<string, ShoppingListItem>(
-            json.items.value,
+            json.items.keys,
             json.items.map.map(
                 ([key, value]) =>
                     [
                         key,
                         new ShoppingListItem(
-                            value.value,
-                            value.map.map(
-                                ([key, value]) =>
-                                    [
-                                        key,
-                                        key === "name"
-                                            ? new MVRegister<string>(
-                                                  // @ts-expect-error: Typescript isn't smart enough to know the type of value
-                                                  value,
-                                                  dots,
-                                              )
-                                            : // @ts-expect-error: Typescript isn't smart enough to know the type of value
-                                              new CCounter(value, dots),
-                                    ] as const,
-                            ),
-                            dots,
+                            new MVRegister(value.name, dots),
+                            new CCounter(value.count, dots),
                         ),
                     ] as const,
             ),

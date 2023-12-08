@@ -1,13 +1,10 @@
 import AWSet from "./awset";
-import type CCounter from "./ccounter";
 import DotsContext from "./dotscontext";
-import type MVRegister from "./mvregister";
 
-type DotsCRDT =
-    | AWMap<unknown, DotsCRDT>
-    | AWSet<unknown>
-    | CCounter
-    | MVRegister<unknown>;
+interface DotsCRDT {
+    merge(other: this, mergeDots: boolean): void;
+    toJSON(): unknown;
+}
 
 export default class AWMap<K, V extends DotsCRDT> {
     private _set: AWSet<K>;
@@ -69,17 +66,16 @@ export default class AWMap<K, V extends DotsCRDT> {
     }
 
     toJSON(): {
-        value: ReturnType<AWSet<K>["toJSON"]>["value"];
+        keys: ReturnType<AWSet<K>["toJSON"]>;
         map: [K, ReturnType<V["toJSON"]>][];
-        dots: ReturnType<DotsContext["toJSON"]>;
     } {
+        console.log(this);
         return {
-            value: this._set.toJSON().value,
+            keys: this._set.toJSON(),
             // @ts-expect-error: Typescript isn't smart enough to get this
             map: [...this.map.entries()].map(
                 ([key, value]) => [key, value.toJSON()] as const,
             ),
-            dots: this._dots.toJSON(),
         };
     }
 }
