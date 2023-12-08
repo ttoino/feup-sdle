@@ -1,0 +1,42 @@
+name: Server CI
+
+on:
+    push:
+        branches:
+            - main
+    pull_request:
+        branches:
+            - main
+
+defaults:
+    run:
+        working-directory: server
+
+jobs:
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  java-version: 21
+                  distribution: adopt
+                  cache: gradle
+            - name: Lint
+              run: ./gradlew ktlintCheck
+
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v2
+            - name: Setup Java
+              uses: actions/setup-java@v4
+              with:
+                  java-version: 21
+                  distribution: adopt
+                  cache: gradle
+            - name: Test
+              run: ./gradlew test
