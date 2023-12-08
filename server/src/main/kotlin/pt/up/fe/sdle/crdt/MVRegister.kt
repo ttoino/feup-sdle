@@ -1,7 +1,15 @@
 package pt.up.fe.sdle.crdt
 
-class MVRegister<V>(
-    private val set: AWSet<V> = AWSet(),
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+@Serializable(MVRegisterSerializer::class)
+class MVRegister<V : Any>(
+    val set: AWSet<V> = AWSet(),
 ) : DotsCRDT<MVRegister<V>> {
     val value get() = set.value
 
@@ -37,4 +45,19 @@ class MVRegister<V>(
     }
 
     override fun toString(): String = "MVRegister($set)"
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+class MVRegisterSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<MVRegister<V>> {
+    private val delegateSerializer = AWSetSerializer<V>(valueSerializer)
+    override val descriptor: SerialDescriptor = SerialDescriptor("MVRegister", delegateSerializer.descriptor)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: MVRegister<V>,
+    ) {
+        encoder.encodeSerializableValue(delegateSerializer, value.set)
+    }
+
+    override fun deserialize(decoder: Decoder): MVRegister<V> = MVRegister(decoder.decodeSerializableValue(delegateSerializer))
 }

@@ -1,5 +1,15 @@
 package pt.up.fe.sdle.crdt
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.serializer
+
 interface DotsCRDT<T : DotsCRDT<T>> {
     fun merge(
         other: T,
@@ -7,7 +17,8 @@ interface DotsCRDT<T : DotsCRDT<T>> {
     ): Any
 }
 
-class AWMap<K, V : DotsCRDT<V>>(
+@Serializable(AWMapSerializer::class)
+class AWMap<K : Any, V : DotsCRDT<V>>(
     val _set: AWSet<K>,
     val map: MutableMap<K, V> = mutableMapOf(),
     val _dots: DotsContext = DotsContext(),
@@ -87,4 +98,48 @@ class AWMap<K, V : DotsCRDT<V>>(
     }
 
     override fun toString(): String = "AWMap(${_set}, $map, ${_dots})"
+}
+
+class AWMapSerializer<K : Any, V : DotsCRDT<V>>(keySerializer: KSerializer<K>, valueSerializer: KSerializer<V>) : KSerializer<AWMap<K, V>> {
+    private val delegateSerializer = AWMapSurrogate.serializer(keySerializer, valueSerializer)
+    override val descriptor: SerialDescriptor = delegateSerializer.descriptor
+
+    override fun serialize(
+        encoder: Encoder,
+        value: AWMap<K, V>,
+    ) {
+        val surrogate = AWMapSurrogate(value._set, value.map.map { AWMapEntry(it.key, it.value) }, value.dots)
+        encoder.encodeSerializableValue(delegateSerializer, surrogate)
+    }
+
+    override fun deserialize(decoder: Decoder): AWMap<K, V> {
+        val surrogate = decoder.decodeSerializableValue(delegateSerializer)
+        val map = surrogate.map.map { Pair(it.key, it.value) }.toTypedArray()
+        return AWMap(surrogate.value, mutableMapOf(*map), surrogate.dots)
+    }
+
+    @Serializable
+    @SerialName("AWMap")
+    data class AWMapSurrogate<K : Any, V : DotsCRDT<V>>(val value: AWSet<K>, val map: Iterable<AWMapEntry<K, V>>, val dots: DotsContext)
+}
+
+@Serializable(AWMapEntrySerializer::class)
+data class AWMapEntry<K : Any, V : DotsCRDT<V>>(val key: K, val value: V)
+
+@OptIn(ExperimentalSerializationApi::class)
+class AWMapEntrySerializer<K : Any, V : DotsCRDT<V>> : KSerializer<AWMapEntry<K, V>> {
+    private val delegateSerializer = ListSerializer(serializer<Any>())
+    override val descriptor: SerialDescriptor = SerialDescriptor("AWMapEntry", delegateSerializer.descriptor)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: AWMapEntry<K, V>,
+    ) {
+        encoder.encodeSerializableValue(delegateSerializer, listOf(value.key, value.value))
+    }
+
+    override fun deserialize(decoder: Decoder): AWMapEntry<K, V> {
+        val value = decoder.decodeSerializableValue(delegateSerializer)
+        return AWMapEntry(value[0] as K, value[1] as V)
+    }
 }

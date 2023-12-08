@@ -4,6 +4,7 @@ val logbackVersion: String by project
 
 plugins {
     kotlin("jvm") version "1.9.21"
+    kotlin("plugin.serialization") version "1.9.21"
     id("io.ktor.plugin") version "2.3.6"
     id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
 }
@@ -23,20 +24,21 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm:2.3.7")
-    implementation("io.ktor:ktor-server-netty-jvm:2.3.7")
+    implementation("io.ktor:ktor-serialization-kotlinx-json")
+    implementation("io.ktor:ktor-server-auto-head-response-jvm")
+    implementation("io.ktor:ktor-server-auto-head-response")
+    implementation("io.ktor:ktor-server-caching-headers-jvm")
+    implementation("io.ktor:ktor-server-call-id-jvm")
+    implementation("io.ktor:ktor-server-call-logging-jvm")
+    implementation("io.ktor:ktor-server-call-logging")
+    implementation("io.ktor:ktor-server-content-negotiation")
+    implementation("io.ktor:ktor-server-content-negotiation")
+    implementation("io.ktor:ktor-server-core-jvm")
+    implementation("io.ktor:ktor-server-default-headers-jvm")
+    implementation("io.ktor:ktor-server-netty-jvm")
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
-    implementation("io.ktor:ktor-server-call-logging:$ktorVersion")
-    implementation("io.ktor:ktor-server-auto-head-response:$ktorVersion")
-    implementation("io.ktor:ktor-server-content-negotiation:$ktorVersion")
-    implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
-    implementation("io.ktor:ktor-server-call-logging-jvm:2.3.7")
-    implementation("io.ktor:ktor-server-auto-head-response-jvm:2.3.7")
-    implementation("io.ktor:ktor-server-call-id-jvm:2.3.7")
-    implementation("io.ktor:ktor-server-caching-headers-jvm:2.3.7")
-    implementation("io.ktor:ktor-server-default-headers-jvm:2.3.7")
 
-    testImplementation("io.ktor:ktor-server-tests-jvm:2.3.7")
+    testImplementation("io.ktor:ktor-server-tests-jvm")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlinVersion")
-    testImplementation("io.ktor:ktor-server-test-host-jvm:2.3.7")
+    testImplementation("io.ktor:ktor-server-test-host-jvm")
 }

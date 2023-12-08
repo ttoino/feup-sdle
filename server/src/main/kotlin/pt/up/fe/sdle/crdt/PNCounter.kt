@@ -1,5 +1,8 @@
 package pt.up.fe.sdle.crdt
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 class PNCounter(
     private val increments: GCounter = GCounter(),
     private val decrements: GCounter = GCounter(),
@@ -7,24 +10,26 @@ class PNCounter(
     constructor(increments: Int = 0, decrements: Int = 0) :
         this(GCounter(increments), GCounter(decrements))
 
-    fun getValue(): Int {
-        return increments.getValue() - decrements.getValue()
-    }
+    val value get() = increments.value - decrements.value
 
     fun inc(v: Int = 1): Int {
+        if (v < 0) return dec(-v)
+
         increments.inc(v)
-        return getValue()
+        return value
     }
 
     fun dec(v: Int = 1): Int {
+        if (v < 0) return inc(-v)
+
         decrements.inc(v)
-        return getValue()
+        return value
     }
 
     fun merge(other: PNCounter): Int {
         increments.merge(other.increments)
         decrements.merge(other.decrements)
-        return getValue()
+        return value
     }
 
     override fun equals(other: Any?): Boolean {

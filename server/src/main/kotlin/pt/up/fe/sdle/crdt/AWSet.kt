@@ -1,17 +1,23 @@
 package pt.up.fe.sdle.crdt
 
-typealias DottedValue<V> = Pair<Dot, V>
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
 
-private fun <V> f(
+private fun <V : Any> f(
     a: Set<DottedValue<V>>,
     b: DotsContext,
-): Set<DottedValue<V>> = a.filter { !b.has(it.first) }.toSet()
+): Set<DottedValue<V>> = a.filter { !b.has(it.dot) }.toSet()
 
-class AWSet<V>(
+@Serializable(AWSetSerializer::class)
+class AWSet<V : Any>(
     var _value: MutableSet<DottedValue<V>> = mutableSetOf(),
     val dots: DotsContext = DotsContext(),
 ) : DotsCRDT<AWSet<V>> {
-    val value: Set<V> get() = _value.map { it.second }.toSet()
+    val value: Set<V> get() = _value.map { it.value }.toSet()
 
     constructor(dots: DotsContext) : this(mutableSetOf(), dots)
 
@@ -20,12 +26,12 @@ class AWSet<V>(
         v: V,
     ): Set<V> {
         val dot = dots.next(id)
-        _value.add(Pair(dot, v))
+        _value.add(DottedValue(dot, v))
         return value
     }
 
     fun remove(v: V): Set<V> {
-        _value.removeIf { it.second == v }
+        _value.removeIf { it.value == v }
         return value
     }
 
@@ -67,4 +73,26 @@ class AWSet<V>(
     }
 
     override fun toString(): String = "AWSet(${_value}, $dots)"
+}
+
+class AWSetSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<AWSet<V>> {
+    private val delegateSerializer = AWSetSurrogate.serializer(valueSerializer)
+    override val descriptor: SerialDescriptor = delegateSerializer.descriptor
+
+    override fun serialize(
+        encoder: Encoder,
+        value: AWSet<V>,
+    ) {
+        val surrogate = AWSetSurrogate(value._value, value.dots)
+        encoder.encodeSerializableValue(delegateSerializer, surrogate)
+    }
+
+    override fun deserialize(decoder: Decoder): AWSet<V> {
+        val surrogate = decoder.decodeSerializableValue(delegateSerializer)
+        return AWSet(surrogate.value.toMutableSet(), surrogate.dots)
+    }
+
+    @Serializable
+    @SerialName("AWSet")
+    data class AWSetSurrogate<V : Any>(val value: Iterable<DottedValue<V>>, val dots: DotsContext)
 }

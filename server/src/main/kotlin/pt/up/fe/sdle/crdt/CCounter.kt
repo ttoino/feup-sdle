@@ -1,7 +1,16 @@
 package pt.up.fe.sdle.crdt
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.serializer
+
+@Serializable(CCounterSerializer::class)
 class CCounter(
-    private val set: AWSet<Int> = AWSet(),
+    val set: AWSet<Int> = AWSet(),
 ) : DotsCRDT<CCounter> {
     val value get() = set.value.sum()
 
@@ -15,11 +24,11 @@ class CCounter(
         var v = 0
 
         for (it in set._value) {
-            if (it.first.first != id) {
+            if (it.id != id) {
                 continue
             }
 
-            v = it.second
+            v = it.value
             set._value.remove(it)
         }
 
@@ -59,4 +68,19 @@ class CCounter(
     }
 
     override fun toString(): String = "CCounter($set)"
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+object CCounterSerializer : KSerializer<CCounter> {
+    private val delegateSerializer = AWSetSerializer(serializer<Int>())
+    override val descriptor: SerialDescriptor = SerialDescriptor("CCounter", delegateSerializer.descriptor)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: CCounter,
+    ) {
+        encoder.encodeSerializableValue(delegateSerializer, value.set)
+    }
+
+    override fun deserialize(decoder: Decoder): CCounter = CCounter(decoder.decodeSerializableValue(delegateSerializer))
 }

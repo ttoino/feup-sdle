@@ -1,18 +1,27 @@
 package pt.up.fe.sdle.crdt
 
+import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.SetSerializer
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+@Serializable(GSetSerializer::class)
 class GSet<V>(
-    private val value: MutableSet<V> = mutableSetOf(),
+    private val _value: MutableSet<V> = mutableSetOf(),
 ) {
-    fun getValue(): Set<V> = value
+    val value get(): Set<V> = _value
 
     fun add(v: V): Set<V> {
-        value.add(v)
-        return value
+        _value.add(v)
+        return _value
     }
 
     fun merge(other: GSet<V>): Set<V> {
-        value.addAll(other.value)
-        return value
+        _value.addAll(other._value)
+        return _value
     }
 
     override fun equals(other: Any?): Boolean {
@@ -21,12 +30,28 @@ class GSet<V>(
 
         other as GSet<*>
 
-        return value == other.value
+        return _value == other._value
     }
 
-    override fun hashCode(): Int {
-        return value.hashCode()
+    override fun hashCode(): Int = _value.hashCode()
+
+    override fun toString(): String = "GSet($_value)"
+}
+
+@OptIn(ExperimentalSerializationApi::class)
+class GSetSerializer<V>(valueSerializer: KSerializer<V>) : KSerializer<GSet<V>> {
+    private val delegateSerializer = SetSerializer(valueSerializer)
+    override val descriptor: SerialDescriptor = SerialDescriptor("GSet", delegateSerializer.descriptor)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: GSet<V>,
+    ) {
+        encoder.encodeSerializableValue(delegateSerializer, value.value)
     }
 
-    override fun toString(): String = "GSet($value)"
+    override fun deserialize(decoder: Decoder): GSet<V> {
+        val value = decoder.decodeSerializableValue(delegateSerializer)
+        return GSet(value.toMutableSet())
+    }
 }

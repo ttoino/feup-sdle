@@ -1,20 +1,29 @@
 package pt.up.fe.sdle.crdt
 
+import kotlinx.serialization.KSerializer
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.descriptors.PrimitiveKind
+import kotlinx.serialization.descriptors.PrimitiveSerialDescriptor
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encoding.Decoder
+import kotlinx.serialization.encoding.Encoder
+
+@Serializable(GCounterSerializer::class)
 class GCounter(
-    private var value: Int = 0,
+    private var _value: Int = 0,
 ) {
-    fun getValue() = value
+    val value get() = _value
 
     fun inc(v: Int = 1): Int {
         if (v < 0) throw IllegalArgumentException("Cannot decrement a GCounter")
 
-        value += v
-        return value
+        _value += v
+        return _value
     }
 
     fun merge(other: GCounter): Int {
-        value = maxOf(value, other.value)
-        return value
+        _value = maxOf(_value, other._value)
+        return _value
     }
 
     override fun equals(other: Any?): Boolean {
@@ -23,12 +32,23 @@ class GCounter(
 
         other as GCounter
 
-        return value == other.value
+        return _value == other._value
     }
 
-    override fun hashCode(): Int {
-        return value
+    override fun hashCode(): Int = _value
+
+    override fun toString(): String = "GCounter($_value)"
+}
+
+object GCounterSerializer : KSerializer<GCounter> {
+    override val descriptor: SerialDescriptor = PrimitiveSerialDescriptor("GCounter", PrimitiveKind.INT)
+
+    override fun serialize(
+        encoder: Encoder,
+        value: GCounter,
+    ) {
+        encoder.encodeInt(value.value)
     }
 
-    override fun toString(): String = "GCounter($value)"
+    override fun deserialize(decoder: Decoder): GCounter = GCounter(decoder.decodeInt())
 }
