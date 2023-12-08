@@ -13,6 +13,7 @@ class AWMap<K, V : DotsCRDT<V>>(
     val _dots: DotsContext = DotsContext(),
 ) : DotsCRDT<AWMap<K, V>> {
     val value: Map<K, V> get() = map
+
     val dots get() = _dots
 
     constructor(dots: DotsContext = DotsContext()) : this(AWSet(dots), mutableMapOf(), dots)

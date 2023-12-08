@@ -12,7 +12,7 @@
 
     import { base } from "$app/paths";
     import ShoppingList from "$lib/list";
-
+    
     export let data: PageData;
 
     let { list } = data;
@@ -90,7 +90,7 @@
 
                 <svelte:fragment slot="conflictValue" let:value>
                     <button
-                        class="badge badge-outline badge-lg transition-colors hover:badge-primary hover:badge-outline"
+                        class="badge badge-outline badge-lg hover:badge-primary hover:badge-outline transition-colors"
                         on:click={changeName(value)}
                     >
                         {value}
