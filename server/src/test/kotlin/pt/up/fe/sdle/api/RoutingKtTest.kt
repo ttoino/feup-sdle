@@ -7,14 +7,14 @@ import kotlin.test.Test
 import kotlin.test.asserter
 
 class RoutingKtTest {
-
     @Test
-    fun testGet() = testApplication {
-        application {
-            module()
+    fun testGet() =
+        testApplication {
+            application {
+                module()
+            }
+            client.get("/").apply {
+                asserter.assertTrue(null, true)
+            }
         }
-        client.get("/").apply {
-            asserter.assertTrue(null, true)
-        }
-    }
 }

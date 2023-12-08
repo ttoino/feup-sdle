@@ -9,6 +9,6 @@ import io.ktor.server.routing.*
  */
 fun Route.loadHealthCheck() {
     get {
-        call.respond(mapOf("online" to true));
+        call.respond(mapOf("online" to true))
     }
 }

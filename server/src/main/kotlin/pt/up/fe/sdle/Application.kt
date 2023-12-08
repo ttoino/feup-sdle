@@ -20,12 +20,10 @@ import pt.up.fe.sdle.api.configureRouting
  */
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
 
-
 /**
  *
  */
 fun Application.module() {
-
     install(CallLogging) {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
@@ -46,14 +44,16 @@ fun Application.module() {
         }
     }
     install(ContentNegotiation) {
-        json(Json {
-            prettyPrint = true
-            isLenient = true
-        })
+        json(
+            Json {
+                prettyPrint = true
+                isLenient = true
+            },
+        )
     }
     install(DefaultHeaders) {
         header("X-Engine", "Ktor") // will send this header with each response
     }
 
-    configureRouting ()
+    configureRouting()
 }

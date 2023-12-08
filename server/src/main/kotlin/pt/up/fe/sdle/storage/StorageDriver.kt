@@ -4,9 +4,8 @@ package pt.up.fe.sdle.storage
  *
  */
 interface StorageDriver {
-
     /**
      *
      */
-    fun store(data: Any);
+    fun store(data: Any)
 }
