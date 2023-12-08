@@ -56,7 +56,6 @@ export default class AWSet<V> {
     }
 
     toJSON() {
-        console.log(this)
         return [...this._value.values()];
     }
 }

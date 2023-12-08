@@ -69,7 +69,6 @@ export default class AWMap<K, V extends DotsCRDT> {
         keys: ReturnType<AWSet<K>["toJSON"]>;
         map: [K, ReturnType<V["toJSON"]>][];
     } {
-        console.log(this);
         return {
             keys: this._set.toJSON(),
             // @ts-expect-error: Typescript isn't smart enough to get this
