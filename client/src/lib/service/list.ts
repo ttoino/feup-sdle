@@ -74,7 +74,7 @@ export const sync = async (list: ShoppingList) => {
                 locallyStoredListData,
             );
 
-            // locallyStoredList.merge(responseList);
+            locallyStoredList.merge(responseList);
 
             await localforage.setItem(responseListId, locallyStoredList.toJSON());
         } else {

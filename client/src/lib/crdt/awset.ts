@@ -12,10 +12,10 @@ export default class AWSet<V> {
         zod.array(zod.tuple([zod.string(), zod.number(), valueType]));
 
     constructor(
-        value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],
+        _value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],
         dots = new DotsContext(),
     ) {
-        this._value = value instanceof Set ? value : new Set(value);
+        this._value = _value instanceof Set ? _value : new Set(_value);
         this.dots = dots;
     }
 
@@ -52,7 +52,23 @@ export default class AWSet<V> {
         const a = this.f(this._value, other.dots);
         const b = this.f(other._value, this.dots);
 
-        this._value.intersection(other._value).union(a).union(b);
+        // Apparently, Set.intersection gets confused when set elements are references
+        // this._value = this._value.intersection(other._value).union(a).union(b);
+
+        // HACK: do this manually for our specific use case
+        const intersection: DottedValue<V>[] = []
+        for (const dottedValue of this._value) {
+            for (const otherDottedValue of other._value) {
+
+                if (dottedValue.length !== otherDottedValue.length) continue;
+                if (dottedValue[0] !== otherDottedValue[0]) continue;
+                if (dottedValue[1] !== otherDottedValue[1]) continue;
+                if (dottedValue[2] !== otherDottedValue[2]) continue;
+
+                intersection.push(dottedValue)
+            }
+        }
+        this._value = new Set(intersection).union(a).union(b);
 
         if (mergeDots) this.dots.merge(other.dots);
 
