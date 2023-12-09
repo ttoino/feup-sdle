@@ -10,7 +10,7 @@ class PNCounter(
     private val increments: GCounter = GCounter(),
     private val decrements: GCounter = GCounter(),
 ) {
-    constructor(increments: Int = 0, decrements: Int = 0) :
+    constructor(increments: Int, decrements: Int = 0) :
         this(GCounter(increments), GCounter(decrements))
 
     val value get() = increments.value - decrements.value
