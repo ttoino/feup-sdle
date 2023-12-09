@@ -16,6 +16,8 @@ services:
       - ${SERVER_PORT}
     env_file:
       - .env
+    environment:
+      CONNECT_ADDRESS: http://server:${SERVER_PORT}
   
   nginx:
     image: nginx:alpine
@@ -26,6 +28,9 @@ services:
         target: /etc/nginx/templates/default.conf.template
     env_file:
       - .env
+    depends_on:
+      - client
+      - server
 
 configs:
   nginx:
