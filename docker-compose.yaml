@@ -1,0 +1,32 @@
+version: '3'
+services:
+  client:
+    build:
+      context: ./client
+      args:
+        SERVER_URL: ${PUBLIC_SCHEME}://${PUBLIC_HOST}:${PUBLIC_PORT}${SERVER_PATH}
+    expose:
+      - ${CLIENT_PORT}
+    env_file:
+      - .env
+  
+  server:
+    build: ./server
+    expose:
+      - ${SERVER_PORT}
+    env_file:
+      - .env
+  
+  nginx:
+    image: nginx:alpine
+    ports:
+      - ${PUBLIC_PORT}:${PUBLIC_PORT}
+    configs:
+      - source: nginx
+        target: /etc/nginx/templates/default.conf.template
+    env_file:
+      - .env
+
+configs:
+  nginx:
+    file: ./nginx.conf

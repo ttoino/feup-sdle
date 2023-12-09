@@ -1,0 +1,10 @@
+.svelte-kit
+build
+coverage
+node_modules
+
+.dockerignore
+.gitignore
+.npmrc
+Dockerfile
+README.md

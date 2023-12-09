@@ -1,11 +1,8 @@
-import { PUBLIC_BASE_URL } from "$env/static/public";
+import { PUBLIC_SERVER_URL } from "$env/static/public";
 import ShoppingList, { type ShoppingListJSON } from "$lib/list";
 import localforage from "$lib/localforage";
 import { addNotification } from "$lib/stores/notifications";
 import zod from "zod";
-
-// TODO: Change this to the actual API URL
-const API_URL = `${PUBLIC_BASE_URL}/list`;
 
 const syncResponseSchema = zod.object({
     list: ShoppingList.schema(),
@@ -18,7 +15,7 @@ const syncResponseSchema = zod.object({
  * @returns
  */
 export const sync = async (list: ShoppingList) => {
-    const syncEndpoint = `${API_URL}/${list.id}`;
+    const syncEndpoint = `${PUBLIC_SERVER_URL}/list/${list.id}`;
 
     try {
         const response = await fetch(syncEndpoint, {

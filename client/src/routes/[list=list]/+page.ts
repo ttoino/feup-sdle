@@ -1,10 +1,8 @@
-import { PUBLIC_BASE_URL } from "$env/static/public";
+import { PUBLIC_SERVER_URL } from "$env/static/public";
 import ShoppingList, { type ShoppingListJSON } from "$lib/list";
 import localforage from "$lib/localforage";
 import type { PageLoad } from "./$types";
 import { error } from "@sveltejs/kit";
-
-const API_URL = `${PUBLIC_BASE_URL}/list`;
 
 export const load: PageLoad = async ({ params, fetch }) => {
     const listId = params.list;
@@ -18,7 +16,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
         let response: Response;
         try {
             // fetch from remote
-            response = await fetch(`${API_URL}/${listId}`, {
+            response = await fetch(`${PUBLIC_SERVER_URL}/list/${listId}`, {
                 method: "GET",
                 headers: {
                     Accepts: "application/json",
