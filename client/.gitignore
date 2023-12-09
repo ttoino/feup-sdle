@@ -1,7 +1,7 @@
-!.env.example
 .DS_Store
 .env
 .env.*
+!.env.example
 .output
 .vercel
 /.svelte-kit
