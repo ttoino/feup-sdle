@@ -58,9 +58,7 @@ class CCounter(
 
         other as CCounter
 
-        if (set != other.set) return false
-
-        return true
+        return set == other.set
     }
 
     override fun hashCode(): Int = set.hashCode()

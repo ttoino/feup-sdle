@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.up.fe.sdle
 
 import io.ktor.http.*
@@ -12,7 +14,6 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
-import kotlinx.serialization.json.Json
 import org.slf4j.event.*
 import pt.up.fe.sdle.api.configureRouting
 

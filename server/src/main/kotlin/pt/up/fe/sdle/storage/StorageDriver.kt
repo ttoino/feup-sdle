@@ -13,12 +13,14 @@ typealias StorageKey = String
  * Examples of implementations include [FileSystemStorageDriver] and [MemoryStorageDriver]
  */
 interface StorageDriver {
-
     /**
      * Stores the given piece of data, optionally using the supplied [StorageKey].
      *
      * @param [data] the data to store
      * @param [key] the key under which to store data
      */
-    fun store(data: Any, key: StorageKey?)
+    fun store(
+        data: Any,
+        key: StorageKey?,
+    )
 }

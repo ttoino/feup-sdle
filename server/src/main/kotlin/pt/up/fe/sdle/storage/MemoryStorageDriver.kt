@@ -6,8 +6,10 @@ package pt.up.fe.sdle.storage
  * This driver, while keeping data ephemeral, allows for faster access to data.
  */
 class MemoryStorageDriver : BaseStorageDriver() {
-    override fun store(data: Any, key: StorageKey?) {
+    override fun store(
+        data: Any,
+        key: StorageKey?,
+    ) {
         TODO("Not yet implemented")
     }
-
 }

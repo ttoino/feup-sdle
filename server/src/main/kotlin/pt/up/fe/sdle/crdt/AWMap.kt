@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.up.fe.sdle.crdt
 
 import kotlinx.serialization.*
@@ -98,7 +100,8 @@ class AWMap<K : Any, V : DotsCRDT<V>>(
     override fun toString(): String = "AWMap(${_set}, $map, ${_dots})"
 }
 
-class AWMapSerializer<K : Any, V : DotsCRDT<V>>(keySerializer: KSerializer<K>, valueSerializer: KSerializer<V>) : KSerializer<AWMap<K, V>> {
+class AWMapSerializer<K : Any, V : DotsCRDT<V>>(keySerializer: KSerializer<K>, valueSerializer: KSerializer<V>) :
+    KSerializer<AWMap<K, V>> {
     private val delegateSerializer = AWMapSurrogate.serializer(keySerializer, valueSerializer)
     override val descriptor: SerialDescriptor = delegateSerializer.descriptor
 

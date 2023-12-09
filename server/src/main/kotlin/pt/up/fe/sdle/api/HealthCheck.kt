@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.up.fe.sdle.api
 
 import io.ktor.http.*
@@ -16,17 +18,15 @@ data class HealthCheck(
      * The status of the endpoint this healthcheck is installed on. Defaults to true.
      */
     val online: Boolean,
-
     /**
      * The path where this health-check was installed.
      */
     val path: String,
-
     /**
      * Optional message passed in on the Healthcheck.
      */
-    val message: String?
-);
+    val message: String?,
+)
 
 /**
  * Registers a "health check" endpoint at the path this is called.
@@ -37,7 +37,6 @@ data class HealthCheck(
  */
 fun Route.loadHealthCheck(messageProducer: (ApplicationCall) -> String) {
     get {
-
         val payload = HealthCheck(online = true, path = call.request.path(), message = messageProducer(call))
 
         call.application.environment.log.info("Responding to health check with custom message: \"%s\"".format(payload))

@@ -10,16 +10,14 @@ class Node(
      * The storage driver responsible for storing data on this node
      */
     var storageDriver: StorageDriver,
-
     private var _peers: MutableList<String>,
 ) {
-
     /**
      *
      */
     val peers: List<String> get() = _peers.toList()
 
-    constructor(driver: StorageDriver): this(driver, mutableListOf())
+    constructor(driver: StorageDriver) : this(driver, mutableListOf())
 
     /**
      * Adds the given IP Address to this node's list of peers
