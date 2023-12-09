@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ShoppingList from "$lib/list";
+    import ShoppingList, { type ShoppingListJSON } from "$lib/list";
     import localforage from "localforage";
     import { v4 as uuidv4 } from "uuid";
     import id from "$lib/stores/id";
@@ -20,7 +20,7 @@
         list.name.assign($id!, listName);
 
         try {
-            await localforage.setItem(listId, list.toJSON());
+            await localforage.setItem<ShoppingListJSON>(listId, list.toJSON());
 
             goto(`/${listId}`);
         } catch (encodeURIError) {

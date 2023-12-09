@@ -11,6 +11,12 @@ const syncResponseSchema = zod.object({
     list: ShoppingList.schema(),
 });
 
+/**
+ * Synchronizes a list with the server.
+ * 
+ * @param list the list to send to the server to synchronize
+ * @returns 
+ */
 export const sync = async (list: ShoppingList) => {
     const syncEndpoint = `${API_URL}/test`;
 
@@ -59,29 +65,25 @@ export const sync = async (list: ShoppingList) => {
         );
         const responseListId = responseList.id;
 
+        // This should be the same as the list we sent to the server, but it doesn't hurt to be safe.
         const locallyStoredListData =
             await localforage.getItem<ShoppingListJSON>(responseListId);
-
-        console.log("locallyStoredListData", locallyStoredListData);
 
         if (locallyStoredListData !== null) {
             const locallyStoredList = ShoppingList.fromJSON(
                 locallyStoredListData,
             );
 
-            console.log("local", locallyStoredList, "remote", responseList);
+            // locallyStoredList.merge(responseList);
 
-            locallyStoredList.merge(responseList);
-
-            console.log(
-                "Merged remote list into local list",
-                locallyStoredListData,
-            );
-
-            // await localforage.setItem(responseListId, locallyStoredList);
+            await localforage.setItem(responseListId, locallyStoredList.toJSON());
         } else {
             // If the list is not already stored locally, we can just store the remote list.
-            // await localforage.setItem(responseListId, responseList);
+
+            // Here we parse it just to serialize it again. These might be extra steps but:
+            // 1. We ensure that the data is valid
+            // 2. This problem only arises if we reach this branch, which should not happen (TODO: to be revised).
+            await localforage.setItem(responseListId, responseList.toJSON());
         }
     } catch (error) {
         // We only get here if the fetch() itself fails, not if the server returns an error code.

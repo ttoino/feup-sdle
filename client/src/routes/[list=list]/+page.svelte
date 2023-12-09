@@ -11,7 +11,7 @@
     import NewItem from "./NewItem.svelte";
 
     import { base } from "$app/paths";
-    import ShoppingList from "$lib/list";
+    import ShoppingList, { type ShoppingListJSON } from "$lib/list";
 
     import { sync } from "$lib/service/list";
 
@@ -31,10 +31,10 @@
         });
 
     const persistList = async () => {
-        await localforage.setItem(list.id, list.toJSON());
+        await localforage.setItem<ShoppingListJSON>(list.id, list.toJSON());
 
         // Do this to test fetch requests
-        // TODO: do not run this every time we sync a list locally,m that is obviously bad
+        // TODO: do not run this every time we sync a list locally, that is obviously bad
         await sync(list)
             .then(() => console.log("Persisted list"))
             .catch(console.error);
