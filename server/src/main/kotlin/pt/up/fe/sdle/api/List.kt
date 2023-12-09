@@ -22,6 +22,7 @@ fun Route.loadShoppingListRoutes() {
 
         val payload = call.receive<EchoPayload>()
 
+        call.response.header("Test-Endpoint", "true")
         call.respond(HttpStatusCode.OK, payload)
     }
 

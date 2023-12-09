@@ -62,6 +62,7 @@ fun Application.module() {
 
     configureRouting()
 
-    // TODO: bootstrap node (and possibly cluster) here
-    val node = Node.new()
+    val node = Node.newWithAddress("${environment.config.host}:${environment.config.port}")
+    log.info("Bootstrapping node with id: ${node.id}")
+    node.bootstrap()
 }
