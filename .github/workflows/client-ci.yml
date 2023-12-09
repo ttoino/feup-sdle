@@ -26,6 +26,8 @@ jobs:
                   cache-dependency-path: client/package-lock.json
             - name: Install dependencies
               run: npm ci
+            - name: Setup environment
+              run: cp .env.example .env
             - name: Check
               run: npm run check
 
@@ -42,6 +44,8 @@ jobs:
                   cache-dependency-path: client/package-lock.json
             - name: Install dependencies
               run: npm ci
+            - name: Setup environment
+              run: cp .env.example .env
             - name: Lint
               run: npm run lint
 
@@ -58,6 +62,8 @@ jobs:
                   cache-dependency-path: client/package-lock.json
             - name: Install dependencies
               run: npm ci
+            - name: Setup environment
+              run: cp .env.example .env
             - name: Format
               run: npm run format
 
@@ -74,6 +80,8 @@ jobs:
                   cache-dependency-path: client/package-lock.json
             - name: Install dependencies
               run: npm ci
+            - name: Setup environment
+              run: cp .env.example .env
             - name: Test
               run: npm run test
     
@@ -90,5 +98,7 @@ jobs:
                   cache-dependency-path: client/package-lock.json
             - name: Install dependencies
               run: npm ci
+            - name: Setup environment
+              run: cp .env.example .env
             - name: Build
               run: npm run build
