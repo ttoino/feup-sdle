@@ -55,17 +55,16 @@ export default class AWSet<V> {
         // Apparently, Set.intersection gets confused when set elements are references
         // this._value = this._value.intersection(other._value).union(a).union(b);
 
-        // HACK: do this manually for our specific use case
-        const intersection: DottedValue<V>[] = []
+        // HACK: do this manually for our specific use case - Nuno Pereira, 5am coding
+        const intersection: DottedValue<V>[] = [];
         for (const dottedValue of this._value) {
             for (const otherDottedValue of other._value) {
-
                 if (dottedValue.length !== otherDottedValue.length) continue;
                 if (dottedValue[0] !== otherDottedValue[0]) continue;
                 if (dottedValue[1] !== otherDottedValue[1]) continue;
                 if (dottedValue[2] !== otherDottedValue[2]) continue;
 
-                intersection.push(dottedValue)
+                intersection.push(dottedValue);
             }
         }
         this._value = new Set(intersection).union(a).union(b);

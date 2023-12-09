@@ -10,7 +10,6 @@
     import localforage from "$lib/localforage";
     import NewItem from "./NewItem.svelte";
 
-    import { base } from "$app/paths";
     import ShoppingList, { type ShoppingListJSON } from "$lib/list";
 
     import { sync } from "$lib/service/list";
@@ -33,7 +32,6 @@
     const persistList = async () => {
         await localforage.setItem<ShoppingListJSON>(list.id, list.toJSON());
 
-        // Do this to test fetch requests
         // TODO: do not run this every time we sync a list locally, that is obviously bad
         await sync(list)
             .then(() => console.log("Persisted list"))
@@ -97,7 +95,7 @@
         </h1>
         <button
             class="btn btn-square btn-outline btn-secondary"
-            use:copy={`${base}/${list.id}`}
+            use:copy={`${window.location.origin}/${list.id}`}
             on:click={() =>
                 addNotification("Copied list URL to clipboard", {
                     type: "success",

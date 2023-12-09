@@ -13,12 +13,12 @@ const syncResponseSchema = zod.object({
 
 /**
  * Synchronizes a list with the server.
- * 
+ *
  * @param list the list to send to the server to synchronize
- * @returns 
+ * @returns
  */
 export const sync = async (list: ShoppingList) => {
-    const syncEndpoint = `${API_URL}/test`;
+    const syncEndpoint = `${API_URL}/${list.id}`;
 
     try {
         const response = await fetch(syncEndpoint, {
@@ -76,7 +76,10 @@ export const sync = async (list: ShoppingList) => {
 
             locallyStoredList.merge(responseList);
 
-            await localforage.setItem(responseListId, locallyStoredList.toJSON());
+            await localforage.setItem(
+                responseListId,
+                locallyStoredList.toJSON(),
+            );
         } else {
             // If the list is not already stored locally, we can just store the remote list.
 

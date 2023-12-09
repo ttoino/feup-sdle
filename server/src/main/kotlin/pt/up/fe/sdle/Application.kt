@@ -16,6 +16,7 @@ import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
 import org.slf4j.event.*
 import pt.up.fe.sdle.api.configureRouting
+import pt.up.fe.sdle.cluster.Node
 
 /**
  *
@@ -60,4 +61,7 @@ fun Application.module() {
     }
 
     configureRouting()
+
+    // TODO: bootstrap node (and possibly cluster) here
+    val node = Node.new()
 }

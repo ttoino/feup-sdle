@@ -37,9 +37,12 @@ describe("Set.intersection", () => {
     });
 
     it.skip("should return a set containing all elements that are in both sets when elements are reference values", () => {
-        expect(new Set([[1, 2], [3, 4]]).intersection(new Set([[1, 2]]))).toEqual(
-            new Set([[1, 2]]),
-        );
+        expect(
+            new Set([
+                [1, 2],
+                [3, 4],
+            ]).intersection(new Set([[1, 2]])),
+        ).toEqual(new Set([[1, 2]]));
     });
 });
 

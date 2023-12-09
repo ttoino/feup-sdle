@@ -5,11 +5,17 @@ package pt.up.fe.sdle.storage
  *
  * This driver, while keeping data ephemeral, allows for faster access to data.
  */
-class MemoryStorageDriver : BaseStorageDriver() {
+class MemoryStorageDriver<T> : BaseStorageDriver<T>() {
+    private val items: MutableMap<StorageKey, T> = mutableMapOf()
+
     override fun store(
-        data: Any,
-        key: StorageKey?,
-    ) {
-        TODO("Not yet implemented")
+        key: StorageKey,
+        data: T,
+    ): Boolean {
+        items[key] = data
+
+        return true
     }
+
+    override fun retrieve(key: StorageKey): T? = items[key]
 }
