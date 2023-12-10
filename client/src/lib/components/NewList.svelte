@@ -1,12 +1,10 @@
 <script lang="ts">
-    import ShoppingList, { type ShoppingListJSON } from "$lib/list";
-    import localforage from "localforage";
+    import ShoppingList from "$lib/list";
     import { v4 as uuidv4 } from "uuid";
     import id from "$lib/stores/id";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
     import { goto } from "$app/navigation";
-
-    export let onSubmit: () => void = () => {};
+    import * as listService from "$lib/service/list";
 
     const defaultName = "My new shopping list";
     let listName = "";
@@ -21,14 +19,9 @@
         const list = ShoppingList.new(listId);
         list.name.assign($id!, listName);
 
-        try {
-            await localforage.setItem<ShoppingListJSON>(listId, list.toJSON());
-
-            onSubmit();
-            await goto(`/${listId}`);
-        } catch (encodeURIError) {
-            console.log("Error", encodeURIError);
-        }
+        await listService.syncLocal(list);
+        await goto(`/${listId}`);
+        listService.sync(list);
     }
 </script>
 

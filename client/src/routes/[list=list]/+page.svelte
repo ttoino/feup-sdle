@@ -20,9 +20,10 @@
     // This changes the list when navigating
     $: list = data.list;
 
-    localforage
+    let listId = list.id;
+    let subscription = localforage
         .newObservable({
-            key: list.id,
+            key: listId,
             crossTabNotification: true,
         })
         .subscribe({
@@ -30,6 +31,24 @@
                 list = ShoppingList.fromJSON(value.newValue);
             },
         });
+
+    // Change subscription when list changes
+    $: {
+        if (listId !== list.id) {
+            listId = list.id;
+            subscription.unsubscribe();
+            subscription = localforage
+                .newObservable({
+                    key: listId,
+                    crossTabNotification: true,
+                })
+                .subscribe({
+                    next(value) {
+                        list = ShoppingList.fromJSON(value.newValue);
+                    },
+                });
+        }
+    }
 
     const persistList = async () => listService.sync(list);
 
