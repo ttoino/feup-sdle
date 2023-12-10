@@ -4,7 +4,9 @@ package pt.up.fe.sdle.crdt
 
 import kotlinx.serialization.*
 import kotlinx.serialization.builtins.MapSerializer
-import kotlinx.serialization.descriptors.*
+import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.descriptors.StructureKind
+import kotlinx.serialization.descriptors.buildSerialDescriptor
 import kotlinx.serialization.encoding.*
 
 @Serializable(DotsContextSerializer::class)

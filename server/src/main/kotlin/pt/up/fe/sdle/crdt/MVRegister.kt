@@ -43,6 +43,9 @@ class MVRegister<V : Any>(
     override fun toString(): String = "MVRegister($set)"
 }
 
+/**
+ *
+ */
 @OptIn(ExperimentalSerializationApi::class)
 class MVRegisterSerializer<V : Any>(valueSerializer: KSerializer<V>) : KSerializer<MVRegister<V>> {
     private val delegateSerializer = AWSetSerializer(valueSerializer)

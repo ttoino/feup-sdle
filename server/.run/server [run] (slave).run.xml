@@ -4,6 +4,7 @@
       <option name="env">
         <map>
           <entry key="CONNECT_ADDRESS" value="http://localhost:8080" />
+          <entry key="PORT" value="8081" />
         </map>
       </option>
       <option name="executionName" />

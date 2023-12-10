@@ -15,7 +15,7 @@ import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
 import kotlinx.coroutines.launch
-import org.slf4j.event.*
+import org.slf4j.event.Level
 import pt.up.fe.sdle.api.configureRouting
 import pt.up.fe.sdle.cluster.node.LocalNode
 import pt.up.fe.sdle.cluster.node.Node

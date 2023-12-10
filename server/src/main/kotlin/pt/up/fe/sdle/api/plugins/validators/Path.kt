@@ -1,8 +1,8 @@
 package pt.up.fe.sdle.api.plugins.validators
 
-import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.createRouteScopedPlugin
-import io.ktor.server.response.respond
+import io.ktor.http.*
+import io.ktor.server.application.*
+import io.ktor.server.response.*
 
 /**
  * Configuration used by the [PathParameterValidator] plugin.
@@ -29,7 +29,10 @@ val PathParameterValidator =
             val pathVariableValue = call.parameters[pathVariable]
 
             if (pathVariableValue === null) {
-                call.respond(HttpStatusCode.BadRequest, mapOf("message" to "Field must be present", "path" to pathVariable))
+                call.respond(
+                    HttpStatusCode.BadRequest,
+                    mapOf("message" to "Field must be present", "path" to pathVariable),
+                )
             }
 
             return@onCallReceive

@@ -7,14 +7,16 @@ private const val ID1 = "a"
 private const val ID2 = "b"
 
 class MVRegisterTest {
-    @Test fun `MVRegister - assign a value`() {
+    @Test
+    fun `MVRegister - assign a value`() {
         val register = MVRegister<Int>()
 
         assertEquals(setOf(), register.value)
         assertEquals(setOf(1), register.assign(ID1, 1))
     }
 
-    @Test fun `MVRegister - assign a value multiple times`() {
+    @Test
+    fun `MVRegister - assign a value multiple times`() {
         val register = MVRegister<Int>()
 
         assertEquals(setOf(), register.value)
@@ -23,7 +25,8 @@ class MVRegisterTest {
         assertEquals(setOf(1), register.assign(ID1, 1))
     }
 
-    @Test fun `MVRegister - assign a value to a different id`() {
+    @Test
+    fun `MVRegister - assign a value to a different id`() {
         val register = MVRegister<Int>()
 
         assertEquals(setOf(), register.value)
@@ -31,7 +34,8 @@ class MVRegisterTest {
         assertEquals(setOf(2), register.assign(ID2, 2))
     }
 
-    @Test fun `MVRegister - assign a value to a different id multiple times`() {
+    @Test
+    fun `MVRegister - assign a value to a different id multiple times`() {
         val register = MVRegister<Int>()
 
         assertEquals(setOf(), register.value)
@@ -43,7 +47,8 @@ class MVRegisterTest {
         assertEquals(setOf(2), register.assign(ID2, 2))
     }
 
-    @Test fun `MVRegister - merge with itself`() {
+    @Test
+    fun `MVRegister - merge with itself`() {
         val register = MVRegister<Int>()
 
         register.assign(ID1, 1)
@@ -51,7 +56,8 @@ class MVRegisterTest {
         assertEquals(setOf(1), register.merge(register))
     }
 
-    @Test fun `MVRegister - merge with another register`() {
+    @Test
+    fun `MVRegister - merge with another register`() {
         val register1 = MVRegister<Int>()
         val register2 = MVRegister<Int>()
 
@@ -62,7 +68,8 @@ class MVRegisterTest {
         assertEquals(setOf(2), register1.merge(register2))
     }
 
-    @Test fun `MVRegister - merge with another register with conflicting values`() {
+    @Test
+    fun `MVRegister - merge with another register with conflicting values`() {
         val register1 = MVRegister<Int>()
         val register2 = MVRegister<Int>()
 

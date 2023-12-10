@@ -10,7 +10,6 @@ import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageDriver
 import pt.up.fe.sdle.storage.StorageKey
-import java.lang.Exception
 import java.util.*
 
 /**

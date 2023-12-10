@@ -17,6 +17,11 @@ import pt.up.fe.sdle.cluster.cluster as _cluster
 typealias NodeID = String
 
 /**
+ * The global [Node] instance that is unique to this instance of the server.<
+ */
+lateinit var node: Node
+
+/**
  * A storage node responsible for providing backup storage for the application.
  */
 abstract class Node protected constructor(
@@ -78,7 +83,8 @@ abstract class Node protected constructor(
                 val driver = StorageDriverFactory.getDriver<ShoppingList>()
 
                 localNodeInitialized = true
-                LocalNode(driver)
+                node = LocalNode(driver)
+                node
             } else {
                 RemoteNode()
             }
@@ -96,7 +102,8 @@ abstract class Node protected constructor(
                 val driver = StorageDriverFactory.getDriver<ShoppingList>()
 
                 localNodeInitialized = true
-                LocalNode(driver, id = id)
+                node = LocalNode(driver, id = id)
+                node
             } else {
                 RemoteNode(id = id)
             }
@@ -114,7 +121,8 @@ abstract class Node protected constructor(
                 val driver = StorageDriverFactory.getDriver<ShoppingList>()
 
                 localNodeInitialized = true
-                LocalNode(driver, address = address)
+                node = LocalNode(driver, address = address)
+                node
             } else {
                 RemoteNode(address = address)
             }
@@ -136,7 +144,8 @@ abstract class Node protected constructor(
                 val driver = StorageDriverFactory.getDriver<ShoppingList>()
 
                 localNodeInitialized = true
-                LocalNode(driver, id, address)
+                node = LocalNode(driver, id, address)
+                node
             } else {
                 RemoteNode(id, address)
             }
