@@ -6,7 +6,14 @@
 
     let input: HTMLInputElement;
 
-    const resize = (input: HTMLInputElement) => {
+    export let value: string = "";
+    $: resize(input, value);
+
+    const resize = (input: HTMLInputElement, value?: string) => {
+        if (!input) return;
+
+        if (value) input.value = value;
+
         const styles = getComputedStyle(input);
         input.style.width = "0px";
         input.style.width = `calc(${input.scrollWidth}px + ${styles.borderBlockStartWidth} + ${styles.borderBlockEndWidth})`;
@@ -26,6 +33,7 @@
 
 <input
     {...$$restProps}
+    {value}
     class="input {$$restProps.class}"
     bind:this={input}
     on:input={onInput}

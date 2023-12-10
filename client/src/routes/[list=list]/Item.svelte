@@ -14,24 +14,21 @@
         item.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
 
         persistList();
-        item = item;
     };
 
     const incrementItem = () => {
         item.count.inc($id, 1);
 
         persistList();
-        item = item;
     };
 
     const decrementItem = () => {
         item.count.dec($id, 1);
 
         persistList();
-        item = item;
     };
 
-    const changeCount = () => async (e: Event) => {
+    const changeCount = (e: Event) => {
         const target = e.target as HTMLInputElement;
 
         // Using target.valueAsNumber is being funky
@@ -43,7 +40,6 @@
         item.count.inc($id!, value - item.count.value);
 
         persistList();
-        item = item;
     };
 </script>
 
@@ -69,8 +65,9 @@
             </button>
         </svelte:fragment>
     </MvRegister>
+
     <button
-        class="btn btn-square btn-outline btn-success join-item h-auto !rounded-none"
+        class="btn btn-square btn-outline btn-success join-item h-auto !rounded-none z-10"
         on:click={incrementItem}
     >
         <Icon src={Plus} class="h-6 w-6" />
@@ -80,16 +77,16 @@
         inputmode="numeric"
         pattern="-?[0-9]+"
         required
-        on:change={changeCount()}
+        on:change={changeCount}
         value={item.count.value.toString()}
     />
-
     <button
-        class="btn btn-square btn-outline btn-error join-item h-auto !rounded-none"
+        class="btn btn-square btn-outline btn-warning mr-[1px] join-item h-auto !rounded-none"
         on:click={decrementItem}
     >
         <Icon src={Minus} class="h-6 w-6" />
     </button>
+
     <button
         class="btn btn-square btn-outline btn-error join-item h-auto"
         on:click={deleteThis}
