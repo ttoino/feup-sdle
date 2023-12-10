@@ -46,7 +46,7 @@ export class ShoppingListItem {
         const count = new CCounter([], dots);
         count.inc(id, 1);
 
-        const item = new ShoppingListItem(nameRegister, count );
+        const item = new ShoppingListItem(nameRegister, count);
 
         return item;
     }

@@ -5,7 +5,6 @@
     import type { ShoppingListItem } from "$lib/list";
     import id from "$lib/stores/id";
     import { Icon, XMark, Plus, Minus } from "svelte-hero-icons";
-    import type { parse } from "svelte/compiler";
 
     export let item: ShoppingListItem;
     export let persistList: () => Promise<unknown>;
@@ -14,17 +13,21 @@
     const changeName = (name?: string) => async (e: Event) => {
         item.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
 
-        await persistList();
+        persistList();
         item = item;
     };
 
-    const incrementItem = (e: Event) => {
+    const incrementItem = () => {
         item.count.inc($id, 1);
+
+        persistList();
         item = item;
     };
 
-    const decrementItem = (e: Event) => {
+    const decrementItem = () => {
         item.count.dec($id, 1);
+
+        persistList();
         item = item;
     };
 
@@ -39,7 +42,7 @@
 
         item.count.inc($id!, value - item.count.value);
 
-        await persistList();
+        persistList();
         item = item;
     };
 </script>
@@ -59,7 +62,7 @@
 
         <svelte:fragment slot="conflictValue" let:value>
             <button
-                class="badge badge-outline badge-lg hover:badge-primary hover:badge-outline transition-colors"
+                class="badge badge-outline badge-lg transition-colors hover:badge-primary hover:badge-outline"
                 on:click={changeName(value)}
             >
                 {value}
@@ -73,7 +76,7 @@
         <Icon src={Plus} class="h-6 w-6" />
     </button>
     <ExpandingInput
-        class="join-item input-bordered h-auto min-w-[3rem] max-w-[50%] text-center !rounded-none"
+        class="join-item input-bordered h-auto min-w-[3rem] max-w-[50%] !rounded-none text-center"
         inputmode="numeric"
         pattern="-?[0-9]+"
         required
@@ -82,7 +85,7 @@
     />
 
     <button
-        class="btn btn-square btn-outline btn-error join-item h-auto !rounded-none" 
+        class="btn btn-square btn-outline btn-error join-item h-auto !rounded-none"
         on:click={decrementItem}
     >
         <Icon src={Minus} class="h-6 w-6" />

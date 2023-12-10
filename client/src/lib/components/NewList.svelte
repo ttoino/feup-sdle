@@ -5,8 +5,6 @@
     import id from "$lib/stores/id";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
     import { goto } from "$app/navigation";
-    import { Plus } from "svelte-hero-icons";
-
 
     const defaultName = "My new shopping list";
     let listName = "";
@@ -32,10 +30,10 @@
 </script>
 
 <form
-    class="flex-col md:flex-row md:gap-4"
+    class="flex flex-row flex-wrap justify-end"
     on:submit|preventDefault={createShoppingList}
 >
-    <label class="form-control flex-1" for="name">
+    <label class="form-control w-full" for="name">
         <span class="label label-text">Name</span>
 
         <WrappingInput
@@ -47,7 +45,7 @@
         />
     </label>
 
-    <label class="form-control flex-1" for="id">
+    <label class="form-control w-full" for="id">
         <span class="label label-text">ID</span>
         <WrappingInput
             name="id"
@@ -59,7 +57,7 @@
         />
     </label>
 
-    <button type="submit" class="btn text-black bg-success mt-4 md:m-0 md:mt-9">
-        Create
-    </button>
+    <slot />
+
+    <button type="submit" class="btn btn-success mt-4 self-end">Create</button>
 </form>
