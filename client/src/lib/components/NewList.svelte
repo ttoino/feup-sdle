@@ -6,6 +6,8 @@
     import WrappingInput from "$lib/components/WrappingInput.svelte";
     import { goto } from "$app/navigation";
 
+    export let onSubmit: () => void = () => {};
+
     const defaultName = "My new shopping list";
     let listName = "";
 
@@ -22,7 +24,8 @@
         try {
             await localforage.setItem<ShoppingListJSON>(listId, list.toJSON());
 
-            goto(`/${listId}`);
+            onSubmit();
+            await goto(`/${listId}`);
         } catch (encodeURIError) {
             console.log("Error", encodeURIError);
         }

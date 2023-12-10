@@ -13,10 +13,50 @@ import pt.up.fe.sdle.cluster.cluster
 import pt.up.fe.sdle.crdt.ShoppingList
 
 /**
+ * Payload sent on PUT requests for this node to merge its view of a given shopping list
+ */
+@Serializable
+data class SyncPayload(
+    /**
+     * The shopping list to merge
+     */
+    val list: ShoppingList,
+
+    /**
+     * Whether this request came from an external client or another node in the cluster.
+     */
+    val handoff: Boolean = false,
+)
+
+/**
+ * A response object for a PUT request.
+ */
+@Serializable
+data class SyncResponse(
+    /**
+     * The merged shopping list
+     */
+    val list: ShoppingList
+)
+
+/**
+ * A response for a GET request
+ */
+@Serializable
+data class GetResponse(
+
+    /**
+     * The shopping list to return, or *null* if it does not exist.
+     */
+    val list: ShoppingList?
+)
+
+/**
  * Load shopping list API routes
  */
 fun Route.loadShoppingListRoutes() {
     put("/echo") {
+
         @Serializable
         data class EchoPayload(val list: ShoppingList)
 
@@ -32,40 +72,39 @@ fun Route.loadShoppingListRoutes() {
         }
 
         get {
-            @Serializable
-            data class GetPayload(val list: ShoppingList?)
+
 
             val listId = call.parameters["listId"] as String
+            val handoff = call.request.queryParameters["handoff"]
 
             cluster.getNodeFor(listId)?.let { node ->
                 val list = node.get(listId)
 
-                val status: HttpStatusCode =
-                    if (list === null) {
-                        HttpStatusCode.NotFound
-                    } else {
-                        HttpStatusCode.OK
-                    }
+                val status: HttpStatusCode = if (list === null) {
+                    HttpStatusCode.NotFound
+                } else {
+                    HttpStatusCode.OK
+                }
 
-                call.respond(status, GetPayload(list))
+                call.respond(status, GetResponse(list))
             }
         }
 
         post {
-            @Serializable
-            data class SyncPayload(val list: ShoppingList)
 
             val listId = call.parameters["listId"] as String
             val payload = call.receive<SyncPayload>()
 
             val payloadShoppingList = payload.list
+            val handoff = payload.handoff
 
             cluster.getNodeFor(listId)?.let { node ->
                 val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList)
 
-                val responsePayload = SyncPayload(shoppingList)
+                val responsePayload = SyncResponse(shoppingList)
 
                 call.respond(HttpStatusCode.OK, responsePayload)
+                return@post
             }
         }
 

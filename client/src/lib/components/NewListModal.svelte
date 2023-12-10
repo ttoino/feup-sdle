@@ -10,7 +10,7 @@
 
 <dialog bind:this={dialog} class="modal">
     <div class="modal-box">
-        <NewList>
+        <NewList onSubmit={() => dialog.close()}>
             <button
                 type="button"
                 class="btn btn-error mr-4 mt-4"

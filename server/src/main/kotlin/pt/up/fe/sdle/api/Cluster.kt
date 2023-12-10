@@ -11,14 +11,34 @@ import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.cluster.cluster
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.cluster.node.NodeID
+import pt.up.fe.sdle.cluster.node.node
+import pt.up.fe.sdle.logger
 
 /**
- * Registers a "health check" endpoint at the path this is called.
+ * Request to join a cluster.
+ */
+@Serializable
+data class JoinPayload(
+    /**
+     * The id of the node asking to join this cluster.
+     */
+    val nodeId: NodeID,
+
+    /**
+     * The address of the node asking to join this cluster.
+     */
+    val nodeAddress: String
+)
+
+/**
+ * Cluster management endpoints.
+ *
+ * The endpoints present are:
+ * - Join: an external node asking to join this node's cluster.
+ * - Leave: an external node asking to leave this node's cluster.
  */
 fun Route.loadClusterManagementRoutes() {
     post {
-        @Serializable
-        data class JoinPayload(val nodeId: NodeID, val nodeAddress: String)
 
         val payload = call.receive<JoinPayload>()
         val nodeId = payload.nodeId
@@ -26,15 +46,18 @@ fun Route.loadClusterManagementRoutes() {
 
         val joinedNode = Node.newWith(nodeId, nodeAddress)
 
+        logger.info("Node with id $nodeId at address $nodeAddress joined our cluster")
+
         cluster.addNode(joinedNode)
 
-        // TODO: fix this.
-        call.respond(HttpStatusCode.OK, JoinPayload("thisNode.id", "thisNode.address"))
+        call.respond(HttpStatusCode.OK, JoinPayload(node.id, node.address))
+    }
+
+    delete {
+        call.respond(HttpStatusCode.OK)
     }
 
     loadHealthCheck {
-        val nodeId = it.parameters["nodeId"]
-
-        "$nodeId is healthy"
+        "current node is healthy"
     }
 }

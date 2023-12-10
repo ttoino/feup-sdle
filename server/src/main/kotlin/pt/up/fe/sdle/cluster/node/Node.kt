@@ -38,7 +38,7 @@ abstract class Node protected constructor(
     /**
      * The address on which this node listens to cluster requests.
      */
-    protected val address: String get() = _address
+    val address: String get() = _address
 
     /**
      * The cluster this node belongs to.
@@ -146,10 +146,10 @@ abstract class Node protected constructor(
                 val driver = StorageDriverFactory.getDriver<ShoppingList>()
 
                 localNodeInitialized = true
-                node = LocalNode(driver, id, address)
+                node = LocalNode(driver, id = id, address = address)
                 node
             } else {
-                RemoteNode(id, address)
+                RemoteNode(id = id, address = address)
             }
         }
     }

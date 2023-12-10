@@ -6,10 +6,12 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import ch.qos.logback.classic.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.crdt.ShoppingList
+import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageDriver
 import pt.up.fe.sdle.storage.StorageKey
 import java.util.*
@@ -30,6 +32,8 @@ class LocalNode(
         data: ShoppingList,
     ): ShoppingList {
         // TODO: implement replication, hinted handoff and request delegation
+
+        logger.info("Storing and merging list with id ${data.id}")
 
         val currentShoppingList = this.get(key)
 
@@ -65,7 +69,7 @@ class LocalNode(
 
         // TODO: move this logic elsewhere. This should be in a separate, dedicated software stack
         while (retries++ < MAX_RETRIES) {
-            println("Attempting to join cluster of node @ '$connectIp'")
+            logger.info("Attempting to join cluster of node @ '$connectIp'")
 
             val response: HttpResponse
             try {
@@ -77,7 +81,7 @@ class LocalNode(
             } catch (_: Exception) {
                 // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
 
-                println("Attempting to join cluster of itself")
+                logger.warn("Attempting to join cluster of itself")
                 return
             }
 
@@ -101,7 +105,7 @@ class LocalNode(
             }
         }
 
-        println("Failed to join cluster of node @ '$connectIp'")
+        logger.error("Failed to join cluster of node @ '$connectIp'")
     }
 
     private var bootstrapped = false
