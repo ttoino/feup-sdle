@@ -3,6 +3,7 @@
 package pt.up.fe.sdle.cluster
 
 import pt.up.fe.sdle.cluster.node.Node
+import pt.up.fe.sdle.cluster.node.NodeID
 import java.security.MessageDigest
 import java.util.*
 import kotlin.math.min
@@ -19,6 +20,10 @@ val cluster = Cluster()
  */
 class Cluster {
     private val _nodes: TreeMap<Long, Triple<Node, Boolean, Boolean>> = TreeMap()
+
+    /**
+     * The nodes present in this cluster.
+     */
     val nodes get() = _nodes.toSortedMap()
 
     private val lock: Any = Any()
@@ -36,6 +41,15 @@ class Cluster {
      */
     private fun generateVirtualNodeHashes(node: Node) =
         List(virtualNodeAmount) { hasher.generateHash("${node.id}-vn$it") }
+
+    /**
+     * Generates the hashes used by the virtual nodes of a given node using the node's id.
+     *
+     * @param id The id of the node whose virtual node hashes we want.
+     * @return The hashes for the virtual nodes that a node with [id] generates.
+     */
+    private fun generateVirtualNodeHashes(id: NodeID) =
+        List(virtualNodeAmount) { hasher.generateHash("$id-vn$it") }
 
     /**
      * Adds a new node to this cluster's node ring.
@@ -67,6 +81,21 @@ class Cluster {
     fun removeNode(node: Node) {
         val nodeHash = hasher.generateHash(node.id)
         val virtualNodesHashes = generateVirtualNodeHashes(node)
+
+        synchronized(lock) {
+            _nodes.remove(nodeHash)
+            virtualNodesHashes.forEach { _nodes.remove(it) }
+        }
+    }
+
+    /**
+     * Removes the given node from this cluster's node ring using its id.
+     *
+     * @param nodeId The id of the node to remove
+     */
+    fun removeNode(nodeId: NodeID) {
+        val nodeHash = hasher.generateHash(nodeId)
+        val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
 
         synchronized(lock) {
             _nodes.remove(nodeHash)

@@ -30,6 +30,17 @@ data class JoinPayload(
 )
 
 /**
+ * Request to Leave a cluster.
+ */
+@Serializable
+data class LeavePayload(
+    /**
+     * The id of the node asking to join this cluster.
+     */
+    val nodeId: NodeID,
+)
+
+/**
  * Cluster management endpoints.
  *
  * The endpoints present are:
@@ -76,6 +87,11 @@ fun Route.loadClusterManagementRoutes() {
     }
 
     delete {
+        val payload = call.receive<LeavePayload>()
+        val nodeId = payload.nodeId
+
+        cluster.removeNode(nodeId)
+
         call.respond(HttpStatusCode.OK)
     }
 }
