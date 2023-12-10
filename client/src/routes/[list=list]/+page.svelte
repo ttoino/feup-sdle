@@ -10,13 +10,15 @@
     import localforage from "$lib/localforage";
     import NewItem from "./NewItem.svelte";
 
-    import ShoppingList, { type ShoppingListJSON } from "$lib/list";
+    import ShoppingList from "$lib/list";
 
-    import { sync } from "$lib/service/list";
+    import * as listService from "$lib/service/list";
 
     export let data: PageData;
 
-    let { list } = data;
+    let list = data.list;
+    // This changes the list when navigating
+    $: list = data.list;
 
     localforage
         .newObservable({
@@ -29,19 +31,11 @@
             },
         });
 
-    const persistList = async () => {
-        await localforage.setItem<ShoppingListJSON>(list.id, list.toJSON());
-
-        // TODO: do not run this every time we sync a list locally, that is obviously bad
-        await sync(list)
-            .then(() => console.log("Persisted list"))
-            .catch(console.error);
-    };
+    const persistList = async () => listService.sync(list);
 
     const changeName = (name?: string) => (e: Event) => {
         list.name.assign($id!, name ?? (e.target as HTMLInputElement).value);
         persistList();
-        list = list;
     };
 
     const newItem = (name: string) => {
@@ -54,16 +48,12 @@
         });
 
         persistList();
-
-        // Reassigning list to itself to trigger reactivity
-        list = list;
     };
 
     const deleteItem = (item: string) => () => {
         list.items.remove(item);
 
         persistList();
-        list = list;
     };
 </script>
 

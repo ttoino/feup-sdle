@@ -1,10 +1,9 @@
 import { PUBLIC_SERVER_URL } from "$env/static/public";
 import ShoppingList, { type ShoppingListJSON } from "$lib/list";
 import localforage from "$lib/localforage";
-import { addNotification } from "$lib/stores/notifications";
 import zod from "zod";
 
-const syncResponseSchema = zod.object({
+const responseSchema = zod.object({
     list: ShoppingList.schema(),
 });
 
@@ -14,11 +13,14 @@ const syncResponseSchema = zod.object({
  * @param list the list to send to the server to synchronize
  * @returns
  */
-export const sync = async (list: ShoppingList) => {
-    const syncEndpoint = `${PUBLIC_SERVER_URL}/list/${list.id}`;
+export const syncRemote = async (
+    list: ShoppingList,
+    fetch: typeof globalThis.fetch = globalThis.fetch,
+) => {
+    const endpoint = `${PUBLIC_SERVER_URL}/list/${list.id}`;
 
     try {
-        const response = await fetch(syncEndpoint, {
+        const response = await fetch(endpoint, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -28,69 +30,97 @@ export const sync = async (list: ShoppingList) => {
             }),
         });
 
-        if (!response.ok) {
-            // TODO: handle request rejection
+        if (!response.ok) return;
 
-            addNotification("Error attempting to backup data", {
-                type: "error",
-                dismissible: true,
-                timeout: 5000,
-            });
-            return;
-        }
-
-        const parsedResponseData = syncResponseSchema.safeParse(
+        const parsedResponseData = responseSchema.safeParse(
             await response.json(),
         );
 
-        if (!parsedResponseData.success) {
-            // Malformed server response data
+        if (!parsedResponseData.success) return;
 
-            addNotification(
-                "Malformed response data when syncing, reach out to one of the app's maintainers",
-                {
-                    type: "error",
-                    dismissible: true,
-                    timeout: 5000,
-                },
-            );
-            return;
-        }
-
-        const responseList: ShoppingList = ShoppingList.fromJSON(
-            parsedResponseData.data.list,
-        );
-        const responseListId = responseList.id;
-
-        // This should be the same as the list we sent to the server, but it doesn't hurt to be safe.
-        const locallyStoredListData =
-            await localforage.getItem<ShoppingListJSON>(responseListId);
-
-        if (locallyStoredListData !== null) {
-            const locallyStoredList = ShoppingList.fromJSON(
-                locallyStoredListData,
-            );
-
-            locallyStoredList.merge(responseList);
-
-            await localforage.setItem(
-                responseListId,
-                locallyStoredList.toJSON(),
-            );
-        } else {
-            // If the list is not already stored locally, we can just store the remote list.
-
-            // Here we parse it just to serialize it again. These might be extra steps but:
-            // 1. We ensure that the data is valid
-            // 2. This problem only arises if we reach this branch, which should not happen (TODO: to be revised).
-            await localforage.setItem(responseListId, responseList.toJSON());
-        }
-    } catch (error) {
-        // We only get here if the fetch() itself fails, not if the server returns an error code.
-        // This is a network error, not a server error.
-        // Since the application is designed to be local-first, this does not impose a problem.
-        // The user can still use the application, and the data will be synced when the network is available again.
-
-        console.error(error);
+        return ShoppingList.fromJSON(parsedResponseData.data.list);
+    } catch (_) {
+        return;
     }
+};
+
+export const syncLocal = async (list: ShoppingList) => {
+    list.merge(await getLocal(list.id));
+
+    await localforage.setItem(list.id, list.toJSON());
+
+    return list;
+};
+
+export const sync = async (
+    list: ShoppingList,
+    fetch: typeof globalThis.fetch = globalThis.fetch,
+) => {
+    const local = await syncLocal(list);
+
+    const remote = await syncRemote(list, fetch);
+
+    return remote ?? local;
+};
+
+export const syncAll = async (
+    lists: ShoppingList[],
+    fetch: typeof globalThis.fetch = globalThis.fetch,
+) => {
+    const syncedLists = await Promise.all(lists.map((l) => sync(l, fetch)));
+
+    return syncedLists;
+};
+
+export const getRemote = async (
+    listId: string,
+    fetch: typeof globalThis.fetch = globalThis.fetch,
+) => {
+    const endpoint = `${PUBLIC_SERVER_URL}/list/${listId}`;
+
+    try {
+        const response = await fetch(endpoint, {
+            method: "GET",
+            headers: {
+                Accepts: "application/json",
+            },
+        });
+
+        if (!response.ok) return;
+
+        const parsedResponseData = responseSchema.safeParse(
+            await response.json(),
+        );
+
+        if (!parsedResponseData.success) return;
+
+        return ShoppingList.fromJSON(parsedResponseData.data.list);
+    } catch (_) {
+        return;
+    }
+};
+
+export const getLocal = async (listId: string) => {
+    const storedList = await localforage.getItem<ShoppingListJSON>(listId);
+
+    if (storedList) return ShoppingList.fromJSON(storedList);
+};
+
+export const get = async (
+    listId: string,
+    fetch: typeof globalThis.fetch = globalThis.fetch,
+) => {
+    const local = await getLocal(listId);
+
+    if (local) return local;
+
+    const remote = await getRemote(listId, fetch);
+
+    if (remote) return remote;
+};
+
+export const getAll = async () => {
+    const lists = await localforage.keys();
+
+    return Promise.all(lists.map(getLocal));
 };

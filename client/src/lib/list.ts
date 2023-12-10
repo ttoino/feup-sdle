@@ -97,7 +97,9 @@ export default class ShoppingList {
         return item;
     }
 
-    merge(other: ShoppingList) {
+    merge(other?: ShoppingList) {
+        if (!other) return this;
+
         this.name.merge(other.name, false);
         this.items.merge(other.items, false);
         this.dots.merge(other.dots);
