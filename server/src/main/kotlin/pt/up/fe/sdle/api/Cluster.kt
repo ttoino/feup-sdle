@@ -23,11 +23,10 @@ data class JoinPayload(
      * The id of the node asking to join this cluster.
      */
     val nodeId: NodeID,
-
     /**
      * The address of the node asking to join this cluster.
      */
-    val nodeAddress: String
+    val nodeAddress: String,
 )
 
 /**
@@ -39,7 +38,6 @@ data class JoinPayload(
  */
 fun Route.loadClusterManagementRoutes() {
     post {
-
         val payload = call.receive<JoinPayload>()
         val nodeId = payload.nodeId
         val nodeAddress = payload.nodeAddress

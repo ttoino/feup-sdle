@@ -21,7 +21,6 @@ data class SyncPayload(
      * The shopping list to merge
      */
     val list: ShoppingList,
-
     /**
      * Whether this request came from an external client or another node in the cluster.
      */
@@ -36,7 +35,7 @@ data class SyncResponse(
     /**
      * The merged shopping list
      */
-    val list: ShoppingList
+    val list: ShoppingList,
 )
 
 /**
@@ -44,11 +43,10 @@ data class SyncResponse(
  */
 @Serializable
 data class GetResponse(
-
     /**
      * The shopping list to return, or *null* if it does not exist.
      */
-    val list: ShoppingList?
+    val list: ShoppingList?,
 )
 
 /**
@@ -56,7 +54,6 @@ data class GetResponse(
  */
 fun Route.loadShoppingListRoutes() {
     put("/echo") {
-
         @Serializable
         data class EchoPayload(val list: ShoppingList)
 
@@ -72,26 +69,24 @@ fun Route.loadShoppingListRoutes() {
         }
 
         get {
-
-
             val listId = call.parameters["listId"] as String
             val handoff = call.request.queryParameters["handoff"]
 
             cluster.getNodeFor(listId)?.let { node ->
                 val list = node.get(listId)
 
-                val status: HttpStatusCode = if (list === null) {
-                    HttpStatusCode.NotFound
-                } else {
-                    HttpStatusCode.OK
-                }
+                val status: HttpStatusCode =
+                    if (list === null) {
+                        HttpStatusCode.NotFound
+                    } else {
+                        HttpStatusCode.OK
+                    }
 
                 call.respond(status, GetResponse(list))
             }
         }
 
         post {
-
             val listId = call.parameters["listId"] as String
             val payload = call.receive<SyncPayload>()
 

@@ -12,7 +12,6 @@ import pt.up.fe.sdle.api.SyncResponse
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageKey
-import java.lang.Exception
 import java.util.*
 
 /**
@@ -32,7 +31,6 @@ class RemoteNode(
         key: StorageKey,
         data: ShoppingList,
     ): ShoppingList {
-
         val payload = SyncPayload(data, true)
 
         logger.info("Received delegated PUT call for node with id $id at address $address")
@@ -40,7 +38,8 @@ class RemoteNode(
         val response: HttpResponse
 
         try {
-            response = httpClient.post("http://$address/list/${data.id}") {
+            response =
+                httpClient.post("http://$address/list/${data.id}") {
                     contentType(ContentType.Application.Json)
                     setBody(payload)
                 }
@@ -62,16 +61,16 @@ class RemoteNode(
     }
 
     override suspend fun get(key: StorageKey): ShoppingList? {
-
         logger.info("Received delegated GET call for node with id $id at address $address")
 
         val response: HttpResponse
 
         try {
             // FIXME: this is a bit weird because we do not need to know that the storage key is the list id
-            response = httpClient.get("http://$address/list/${key}") {
-                accept(ContentType.Application.Json)
-            }
+            response =
+                httpClient.get("http://$address/list/$key") {
+                    accept(ContentType.Application.Json)
+                }
         } catch (e: Exception) {
             // TODO: "Network error"
 
