@@ -1,95 +1,122 @@
-interface Set<T> {
-    /**
-     * Checks if the set is a superset of another set.
-     *
-     * @param other Another set
-     *
-     * @returns `true` if the set is a superset of another set, `false` otherwise
-     */
-    isSuperset(other: ReadonlySet<T>): boolean;
-
-    /**
-     * Checks if the set is a subset of another set.
-     *
-     * @param other Another set
-     *
-     * @returns `true` if the set is a subset of another set, `false` otherwise
-     */
-    isSubset(other: ReadonlySet<T>): boolean;
-
-    /**
-     * Returns the union of the set and another set.
-     *
-     * @param other Another set
-     *
-     * @returns The union of the set and another set
-     */
-    union(other: ReadonlySet<T>): Set<T>;
-
-    /**
-     * Returns the intersection of the set and another set.
-     *
-     * @param other Another set
-     *
-     * @returns The intersection of the set and another set
-     */
-    intersection(other: ReadonlySet<T>): Set<T>;
-
-    /**
-     * Returns the difference of the set and another set.
-     *
-     * @param other Another set
-     *
-     * @returns The difference of the set and another set
-     */
-    difference(other: ReadonlySet<T>): Set<T>;
-
-    /**
-     * Returns the symmetric difference of the set and another set.
-     *
-     * @param other Another set
-     *
-     * @returns The symmetric difference of the set and another set
-     */
-    symmetricDifference(other: ReadonlySet<T>): Set<T>;
+export interface SetLike<T> {
+    get size(): number;
+    has(value: T): boolean;
+    keys(): IterableIterator<T>;
 }
 
-Set.prototype.isSuperset = function <T>(other: ReadonlySet<T>) {
-    for (const v of other) if (!this.has(v)) return false;
+export default class HashSet<T> implements SetLike<T>, Set<T> {
+    private readonly map: Map<string, T>;
+    private readonly hash: (value: T) => string;
 
-    return true;
-};
+    constructor(iterable?: Iterable<T>, hash: (value: T) => string = String) {
+        this.map = new Map();
+        this.hash = hash;
 
-Set.prototype.isSubset = function <T>(other: ReadonlySet<T>) {
-    for (const v of this) if (!other.has(v)) return false;
+        if (iterable) for (const value of iterable) this.add(value);
+    }
 
-    return true;
-};
+    get [Symbol.toStringTag]() {
+        return "HashSet";
+    }
 
-Set.prototype.union = function <T>(other: ReadonlySet<T>): Set<T> {
-    for (const v of other) this.add(v);
+    get size() {
+        return this.map.size;
+    }
 
-    return this;
-};
+    add(value: T) {
+        this.map.set(this.hash(value), value);
 
-Set.prototype.intersection = function <T>(other: ReadonlySet<T>): Set<T> {
-    for (const v of this) if (!other.has(v)) this.delete(v);
+        return this;
+    }
 
-    return this;
-};
+    clear() {
+        this.map.clear();
+    }
 
-Set.prototype.difference = function <T>(other: ReadonlySet<T>): Set<T> {
-    for (const v of other) this.delete(v);
+    delete(value: T) {
+        return this.map.delete(this.hash(value));
+    }
 
-    return this;
-};
+    difference(other: SetLike<T>) {
+        const result = new HashSet<T>();
 
-Set.prototype.symmetricDifference = function <T>(
-    other: ReadonlySet<T>,
-): Set<T> {
-    for (const v of other)
-        if (this.has(v)) this.delete(v);
-        else this.add(v);
+        for (const value of this.keys())
+            if (!other.has(value)) result.add(value);
 
-    return this;
-};
+        return result;
+    }
+
+    *entries() {
+        for (const value of this.keys()) yield [value, value] as [T, T];
+    }
+
+    forEach(
+        callback: (value: T, value2: T, set: HashSet<T>) => void,
+        thisArg?: unknown,
+    ) {
+        return this.map.forEach((v, _k, _m) => callback(v, v, this), thisArg);
+    }
+
+    has(value: T) {
+        return this.map.has(this.hash(value));
+    }
+
+    intersection(other: SetLike<T>) {
+        const result = new HashSet<T>();
+
+        for (const value of this.keys())
+            if (other.has(value)) result.add(value);
+
+        return result;
+    }
+
+    isDisjointFrom(other: SetLike<T>) {
+        for (const value of this.keys()) if (other.has(value)) return false;
+
+        return true;
+    }
+
+    isSubsetOf(other: SetLike<T>) {
+        for (const value of this.keys()) if (!other.has(value)) return false;
+
+        return true;
+    }
+
+    isSupersetOf(other: SetLike<T>) {
+        for (const value of other.keys()) if (!this.has(value)) return false;
+
+        return true;
+    }
+
+    keys() {
+        return this.map.values();
+    }
+
+    symmetricDifference(other: SetLike<T>) {
+        const result = new HashSet<T>();
+
+        for (const value of this.keys())
+            if (!other.has(value)) result.add(value);
+        for (const value of other.keys())
+            if (!this.has(value)) result.add(value);
+
+        return result;
+    }
+
+    union(other: SetLike<T>) {
+        const result = new HashSet<T>();
+
+        for (const value of this.keys()) result.add(value);
+        for (const value of other.keys()) result.add(value);
+
+        return result;
+    }
+
+    values() {
+        return this.map.values();
+    }
+
+    [Symbol.iterator]() {
+        return this.map.values();
+    }
+}

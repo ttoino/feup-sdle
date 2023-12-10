@@ -1,21 +1,21 @@
-import "$lib/set";
+import HashSet from "$lib/set";
 import DotsContext from "./dotscontext";
 import zod from "zod";
 
 type DottedValue<V> = [string, number, V];
 
 export default class AWSet<V> {
-    protected _value: Set<DottedValue<V>>;
+    protected _value: HashSet<DottedValue<V>>;
     protected dots: DotsContext;
 
     static readonly schema = (valueType: zod.ZodSchema = zod.any()) =>
         zod.array(zod.tuple([zod.string(), zod.number(), valueType]));
 
     constructor(
-        _value: Iterable<DottedValue<V>> | Set<DottedValue<V>> = [],
+        _value: Iterable<DottedValue<V>> | HashSet<DottedValue<V>> = [],
         dots = new DotsContext(),
     ) {
-        this._value = _value instanceof Set ? _value : new Set(_value);
+        this._value = _value instanceof HashSet ? _value : new HashSet(_value);
         this.dots = dots;
     }
 
@@ -44,30 +44,15 @@ export default class AWSet<V> {
         return this.value;
     }
 
-    private f(a: Set<DottedValue<V>>, b: DotsContext) {
-        return new Set([...a.values()].filter(([id, dot]) => !b.has(id, dot)));
+    private f(a: HashSet<DottedValue<V>>, b: DotsContext) {
+        return new HashSet([...a.values()].filter(([id, dot]) => !b.has(id, dot)));
     }
 
     merge(other: AWSet<V>, mergeDots = true) {
         const a = this.f(this._value, other.dots);
         const b = this.f(other._value, this.dots);
 
-        // Apparently, Set.intersection gets confused when set elements are references
-        // this._value = this._value.intersection(other._value).union(a).union(b);
-
-        // HACK: do this manually for our specific use case - Nuno Pereira, 5am coding
-        const intersection: DottedValue<V>[] = [];
-        for (const dottedValue of this._value) {
-            for (const otherDottedValue of other._value) {
-                if (dottedValue.length !== otherDottedValue.length) continue;
-                if (dottedValue[0] !== otherDottedValue[0]) continue;
-                if (dottedValue[1] !== otherDottedValue[1]) continue;
-                if (dottedValue[2] !== otherDottedValue[2]) continue;
-
-                intersection.push(dottedValue);
-            }
-        }
-        this._value = new Set(intersection).union(a).union(b);
+        this._value = this._value.intersection(other._value).union(a).union(b);
 
         if (mergeDots) this.dots.merge(other.dots);
 
