@@ -51,6 +51,10 @@ fun Route.loadClusterManagementRoutes() {
         call.respond(HttpStatusCode.OK, JoinPayload(node.id, node.address))
     }
 
+    get {
+        
+    }
+
     delete {
         call.respond(HttpStatusCode.OK)
     }

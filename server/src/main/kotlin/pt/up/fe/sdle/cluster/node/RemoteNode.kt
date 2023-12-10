@@ -31,7 +31,7 @@ class RemoteNode(
         key: StorageKey,
         data: ShoppingList,
     ): ShoppingList {
-        val payload = SyncPayload(data, true)
+        val payload = SyncPayload(data, handoff = true)
 
         logger.info("Received delegated PUT call for node with id $id at address $address")
 
