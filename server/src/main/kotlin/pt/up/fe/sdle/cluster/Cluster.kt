@@ -18,7 +18,9 @@ val cluster = Cluster()
  * Each [Cluster] instance, while belonging to a single node, has enough information for any given node to work on its peers.
  */
 class Cluster {
-    private val nodes: TreeMap<Long, Triple<Node, Boolean, Boolean>> = TreeMap()
+    private val _nodes: TreeMap<Long, Triple<Node, Boolean, Boolean>> = TreeMap()
+    val nodes get() = _nodes.toSortedMap()
+
     private val lock: Any = Any()
 
     // TODO: retrieve this from configuration
@@ -47,11 +49,11 @@ class Cluster {
         val alive = true
 
         synchronized(lock) {
-            nodes[nodeHash] = Triple(node, alive, false)
-            virtualNodesHashes.forEach { nodes[it] = Triple(node, alive, true) }
+            _nodes[nodeHash] = Triple(node, alive, false)
+            virtualNodesHashes.forEach { _nodes[it] = Triple(node, alive, true) }
         }
 
-        for ((hash, server) in nodes) {
+        for ((hash, server) in _nodes) {
             val (_node, _alive, virtual) = server
             println("$hash -> Node{id=${_node.id}, alive=$_alive}, virtual=$virtual")
         }
@@ -67,8 +69,8 @@ class Cluster {
         val virtualNodesHashes = generateVirtualNodeHashes(node)
 
         synchronized(lock) {
-            nodes.remove(nodeHash)
-            virtualNodesHashes.forEach { nodes.remove(it) }
+            _nodes.remove(nodeHash)
+            virtualNodesHashes.forEach { _nodes.remove(it) }
         }
     }
 
@@ -79,19 +81,19 @@ class Cluster {
      * @return The corresponding node or null if: 1) it does not exist; 2) it exists but is marked "dead" (due to being unreachable)
      */
     fun getNodeFor(key: String): Node? {
-        if (nodes.isEmpty()) {
+        if (_nodes.isEmpty()) {
             return null
         }
 
         var hash = hasher.generateHash(key)
 
-        if (hash !in nodes) {
-            val tailMap = nodes.tailMap(hash)
+        if (hash !in _nodes) {
+            val tailMap = _nodes.tailMap(hash)
 
-            hash = if (tailMap.isEmpty()) nodes.firstKey() else tailMap.firstKey()
+            hash = if (tailMap.isEmpty()) _nodes.firstKey() else tailMap.firstKey()
         }
 
-        val (node, alive) = nodes[hash]!!
+        val (node, alive) = _nodes[hash]!!
 
         return if (alive) node else null
     }
@@ -108,7 +110,7 @@ class Cluster {
 
         // Filter only for the non-virtual nodes
         // If there's only one virtual node, return early
-        val physicalNodes = nodes.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
+        val physicalNodes = _nodes.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
 
         val actualReplicationAmount = getReplicationAmount()
 
@@ -152,7 +154,7 @@ class Cluster {
      *
      * @return The actual replication amount for this cluster.
      */
-    fun getReplicationAmount() = min(nodes.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
+    fun getReplicationAmount() = min(_nodes.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
 
     companion object {
 

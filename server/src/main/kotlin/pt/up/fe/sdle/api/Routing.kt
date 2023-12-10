@@ -21,10 +21,6 @@ fun Application.configureRouting() {
         }
 
         route("/cluster") {
-            loadHealthCheck {
-                "cluster"
-            }
-
             loadClusterManagementRoutes()
         }
     }

@@ -52,14 +52,30 @@ fun Route.loadClusterManagementRoutes() {
     }
 
     get {
-        
+
+        @Serializable
+        class SerializeNode(
+            val nodeRingKey: Long,
+            val id: NodeID,
+            val address: String,
+            val isVirtual: Boolean,
+            val isAlive: Boolean
+        )
+
+        val nodes = cluster.nodes.map {
+
+            val key = it.key
+            val value = it.value
+
+            val (node, isAlive, isVirtual) = value
+
+            SerializeNode(key, node.id, node.address, isVirtual, isAlive)
+        }
+
+        call.respond(HttpStatusCode.OK, nodes)
     }
 
     delete {
         call.respond(HttpStatusCode.OK)
-    }
-
-    loadHealthCheck {
-        "current node is healthy"
     }
 }
