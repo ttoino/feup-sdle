@@ -41,7 +41,7 @@
 
 <div class="mx-auto flex w-full max-w-screen-lg flex-col gap-4 self-stretch">
     {#if shoppingLists.size > 0}
-        <h1 class="text-4xl font-bold">Your shopping lists</h1>
+        <h1 class="text-xl font-bold md:text-4xl">Your shopping lists</h1>
         <ul class="join join-vertical">
             {#each shoppingLists as [_, shoppingList]}
                 <ShoppingListComponent {shoppingList} {deleteShoppingList} />
@@ -49,7 +49,7 @@
         </ul>
     {:else}
         <Icon src={FaceFrown} class="h-12 w-12" />
-        <h1 class="text-4xl font-bold">
+        <h1 class="text-xl font-bold md:text-4xl">
             You don't have any shopping lists yet
         </h1>
         <NewList />

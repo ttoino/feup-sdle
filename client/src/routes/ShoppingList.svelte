@@ -25,24 +25,28 @@
 
 <li class="join join-item join-horizontal">
     <div class="btn btn-outline join-item relative flex-1 gap-4">
-        <a
-            href="/{shoppingList.id}"
-            class="flex-1 text-start before:absolute before:inset-0 before:z-10"
-        >
-            <MVRegister
-                register={shoppingList.name}
-                let:value
-                defaultValue="Unnamed shopping list"
+        <div class="flex flex-1 flex-col text-start">
+            <a
+                href="/{shoppingList.id}"
+                class="text-start before:absolute before:inset-0"
             >
-                {value}
-            </MVRegister>
-        </a>
-        <span class="badge badge-accent">
-            {shoppingList.items.value.size} items
+                <MVRegister
+                    register={shoppingList.name}
+                    let:value
+                    defaultValue="Unnamed shopping list"
+                >
+                    {value}
+                </MVRegister>
+            </a>
+            <span class="text-xs opacity-50">{shoppingList.id}</span>
+        </div>
+        <span class="badge badge-accent gap-[1ch]">
+            {shoppingList.items.value.size}
+            <span class="sr-only md:not-sr-only">items</span>
         </span>
     </div>
     <button
-        class="btn btn-square btn-outline btn-error join-item z-40"
+        class="btn btn-square btn-outline btn-error join-item z-10"
         on:click|preventDefault={deleteThis}
     >
         <Icon src={XMark} class="h-6 w-6" />

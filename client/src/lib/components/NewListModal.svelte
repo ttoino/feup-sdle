@@ -1,11 +1,19 @@
 <script lang="ts">
+    import { Icon, Plus } from "svelte-hero-icons";
     import NewList from "./NewList.svelte";
+    import { onNavigate } from "$app/navigation";
 
     let dialog: HTMLDialogElement;
+
+    onNavigate(() => dialog.close());
 </script>
 
-<button class="btn btn-primary" on:click={() => dialog.showModal()}>
-    New Shopping List
+<button
+    class="btn btn-primary max-md:btn-square"
+    on:click={() => dialog.showModal()}
+>
+    <span class="sr-only md:not-sr-only"> New Shopping List </span>
+    <Icon src={Plus} class="h-6 w-6 md:hidden" />
 </button>
 
 <dialog bind:this={dialog} class="modal">
