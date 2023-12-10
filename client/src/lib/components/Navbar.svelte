@@ -7,6 +7,6 @@
         <Icon src={Home} class="h-6 w-6" />
     </a>
     <div class="flex-1">
-        <!-- Dummy div for now, might have content later -->
+        SDLE
     </div>
 </nav>
