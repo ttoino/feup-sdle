@@ -1,6 +1,5 @@
-import { readonly, writable } from "svelte/store";
-
 import { addNotification } from "./notifications";
+import { readonly, writable } from "svelte/store";
 
 const onlineWritable = writable(navigator.onLine);
 
@@ -10,8 +9,8 @@ addEventListener("online", () => {
     addNotification("You are now online", {
         type: "success",
         timeout: 3000,
-        dismissible: true
-    })
+        dismissible: true,
+    });
 });
 addEventListener("offline", () => {
     onlineWritable.set(false);
@@ -19,8 +18,8 @@ addEventListener("offline", () => {
     addNotification("You are now offline", {
         type: "warning",
         timeout: 3000,
-        dismissible: true
-    })
+        dismissible: true,
+    });
 });
 
 const online = readonly(onlineWritable);

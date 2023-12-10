@@ -45,7 +45,9 @@ export default class AWSet<V> {
     }
 
     private f(a: HashSet<DottedValue<V>>, b: DotsContext) {
-        return new HashSet([...a.values()].filter(([id, dot]) => !b.has(id, dot)));
+        return new HashSet(
+            [...a.values()].filter(([id, dot]) => !b.has(id, dot)),
+        );
     }
 
     merge(other: AWSet<V>, mergeDots = true) {

@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.up.fe.sdle.cluster.node
 
 import io.ktor.client.*

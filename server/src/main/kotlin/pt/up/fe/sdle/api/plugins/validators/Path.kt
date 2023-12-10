@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.up.fe.sdle.api.plugins.validators
 
 import io.ktor.http.*

@@ -13,7 +13,7 @@ export default class GSet<V> {
 
     add(v: V) {
         this._value.add(v);
-    
+
         return this.value;
     }
 

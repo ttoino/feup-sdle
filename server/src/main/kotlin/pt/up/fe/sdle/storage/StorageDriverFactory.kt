@@ -1,3 +1,5 @@
+@file:Suppress("ktlint:standard:no-wildcard-imports")
+
 package pt.up.fe.sdle.storage
 
 /**
@@ -10,7 +12,7 @@ sealed class StorageDriverFactory {
         /**
          * The type of driver to return, computed from system configs.
          */
-        private var DRIVER_TYPE = System.getenv("DRIVER_TYPE")
+        private val DRIVER_TYPE = System.getenv("DRIVER_TYPE")
 
         /**
          * Returns a [StorageDriver] for type [T] according to [DRIVER_TYPE].
