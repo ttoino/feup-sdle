@@ -14,9 +14,11 @@ import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.request.*
+import kotlinx.coroutines.launch
 import org.slf4j.event.*
 import pt.up.fe.sdle.api.configureRouting
-import pt.up.fe.sdle.cluster.Node
+import pt.up.fe.sdle.cluster.node.LocalNode
+import pt.up.fe.sdle.cluster.node.Node
 
 /**
  *
@@ -63,6 +65,8 @@ fun Application.module() {
     configureRouting()
 
     val node = Node.newWithAddress("${environment.config.host}:${environment.config.port}")
-    log.info("Bootstrapping node with id: ${node.id}")
-    node.bootstrap()
+    log.info("Bootstrapping ${if (node is LocalNode) "local" else "remote"} node with id: ${node.id}")
+    launch {
+        node.bootstrap()
+    }
 }

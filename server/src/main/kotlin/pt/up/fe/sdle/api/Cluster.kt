@@ -8,15 +8,15 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
-import pt.up.fe.sdle.cluster.Node
-import pt.up.fe.sdle.cluster.NodeID
+import pt.up.fe.sdle.cluster.cluster
+import pt.up.fe.sdle.cluster.node.Node
+import pt.up.fe.sdle.cluster.node.NodeID
 
 /**
  * Registers a "health check" endpoint at the path this is called.
  */
 fun Route.loadClusterManagementRoutes() {
     post {
-
         @Serializable
         data class JoinPayload(val nodeId: NodeID, val nodeAddress: String)
 
@@ -25,11 +25,11 @@ fun Route.loadClusterManagementRoutes() {
         val nodeAddress = payload.nodeAddress
 
         val joinedNode = Node.newWith(nodeId, nodeAddress)
-        
-        val thisNode = Node.instance
-        thisNode.cluster.addNode(joinedNode)
 
-        call.respond(HttpStatusCode.OK, JoinPayload(thisNode.id, thisNode.address))
+        cluster.addNode(joinedNode)
+
+        // TODO: fix this.
+        call.respond(HttpStatusCode.OK, JoinPayload("thisNode.id", "thisNode.address"))
     }
 
     loadHealthCheck {

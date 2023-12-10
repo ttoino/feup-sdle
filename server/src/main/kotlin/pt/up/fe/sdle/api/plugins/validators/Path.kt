@@ -10,7 +10,7 @@ import io.ktor.server.response.respond
 class PathParameterPluginConfig {
     /**
      * The variable under validation.
-     * 
+     *
      * Defaults to "id".
      */
     var pathVariable: String = "id"

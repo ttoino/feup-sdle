@@ -14,7 +14,7 @@ typealias StorageKey = String
  *
  * @param [T] The type of data to store
  */
-interface StorageDriver<T> {
+sealed interface StorageDriver<T> {
     /**
      * Stores the given piece of data, optionally using the supplied [StorageKey].
      *

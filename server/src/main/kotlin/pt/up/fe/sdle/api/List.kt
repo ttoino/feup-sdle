@@ -7,9 +7,12 @@ import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
+import kotlinx.coroutines.async
 import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.api.plugins.validators.PathParameterValidator
-import pt.up.fe.sdle.cluster.Node
+import pt.up.fe.sdle.cluster.Cluster
+import pt.up.fe.sdle.cluster.cluster
+import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.crdt.ShoppingList
 
 /**
@@ -37,18 +40,18 @@ fun Route.loadShoppingListRoutes() {
 
             val listId = call.parameters["listId"] as String
 
-            val node = Node.instance
+            cluster.getNodeFor(listId)?.let { node ->
+                val list = node.get(listId)
 
-            val list = node.get(listId)
+                val status: HttpStatusCode =
+                    if (list === null) {
+                        HttpStatusCode.NotFound
+                    } else {
+                        HttpStatusCode.OK
+                    }
 
-            val status: HttpStatusCode =
-                if (list === null) {
-                    HttpStatusCode.NotFound
-                } else {
-                    HttpStatusCode.OK
-                }
-
-            call.respond(status, GetPayload(list))
+                call.respond(status, GetPayload(list))
+            }
         }
 
         post {
@@ -60,22 +63,13 @@ fun Route.loadShoppingListRoutes() {
 
             val payloadShoppingList = payload.list
 
-            val node = Node.instance
-            val localShoppingList = node.get(listId)
+            cluster.getNodeFor(listId)?.let { node ->
+                val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList)
 
-            val shoppingList =
-                if (localShoppingList === null) {
-                    // this is the first time this list is sent to the server, just store it
+                val responsePayload = SyncPayload(shoppingList)
 
-                    node.put(payloadShoppingList.id, payloadShoppingList)
-                    payloadShoppingList
-                } else {
-                    localShoppingList.merge(payloadShoppingList)
-                }
-
-            val responsePayload = SyncPayload(shoppingList)
-
-            call.respond(HttpStatusCode.OK, responsePayload)
+                call.respond(HttpStatusCode.OK, responsePayload)
+            }
         }
 
         loadHealthCheck {
