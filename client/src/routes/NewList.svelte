@@ -5,6 +5,8 @@
     import id from "$lib/stores/id";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
     import { goto } from "$app/navigation";
+    import { Plus } from "svelte-hero-icons";
+
 
     const defaultName = "My new shopping list";
     let listName = "";
@@ -30,7 +32,7 @@
 </script>
 
 <form
-    class="flex flex-col md:flex-row md:gap-4"
+    class="flex-col md:flex-row md:gap-4"
     on:submit|preventDefault={createShoppingList}
 >
     <label class="form-control flex-1" for="name">
@@ -57,7 +59,7 @@
         />
     </label>
 
-    <button type="submit" class="btn btn-outline mt-4 md:m-0 md:mt-9">
+    <button type="submit" class="btn text-black bg-success mt-4 md:m-0 md:mt-9">
         Create
     </button>
 </form>

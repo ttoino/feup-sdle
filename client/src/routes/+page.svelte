@@ -4,6 +4,7 @@
     import NewList from "./NewList.svelte";
     import localforage from "$lib/localforage";
     import ShoppingList from "$lib/list";
+    import { Icon, FaceFrown } from "svelte-hero-icons";
 
     export let data: PageData;
 
@@ -38,6 +39,22 @@
     };
 </script>
 
+
+<button class="btn bg-indigo-500 text-white absolute top-20 right-5" onclick="my_modal_3.showModal()">
+    New Shopping List
+</button>
+<dialog id="my_modal_3" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button
+                class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                >✕</button
+            >
+        </form>
+        <NewList />
+    </div>
+</dialog>
+
 <div class="mx-auto flex w-full max-w-screen-lg flex-col gap-4 self-stretch">
     {#if shoppingLists.size > 0}
         <h1 class="text-4xl font-bold">Your shopping lists</h1>
@@ -46,14 +63,11 @@
                 <ShoppingListComponent {shoppingList} {deleteShoppingList} />
             {/each}
         </ul>
-        <div class="divider"></div>
-    {:else}
+    {:else}        
+    <Icon src={FaceFrown} class="h-12 w-12"/>
         <h1 class="text-4xl font-bold">
             You don't have any shopping lists yet
         </h1>
+
     {/if}
-
-    <h2 class="text-xl">New shopping list</h2>
-
-    <NewList />
 </div>
