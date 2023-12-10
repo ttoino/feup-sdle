@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="server [run] (slave)" type="GradleRunConfiguration" factoryName="Gradle" singleton="false">
+  <configuration default="false" name="server [run] (slave 2) " type="GradleRunConfiguration" factoryName="Gradle" singleton="false">
     <ExternalSystemSettings>
       <option name="env">
         <map>

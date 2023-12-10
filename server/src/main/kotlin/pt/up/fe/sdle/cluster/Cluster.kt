@@ -66,11 +66,6 @@ class Cluster {
             _nodes[nodeHash] = Triple(node, alive, false)
             virtualNodesHashes.forEach { _nodes[it] = Triple(node, alive, true) }
         }
-
-        for ((hash, server) in _nodes) {
-            val (_node, _alive, virtual) = server
-            println("$hash -> Node{id=${_node.id}, alive=$_alive}, virtual=$virtual")
-        }
     }
 
     /**
@@ -147,7 +142,7 @@ class Cluster {
         val orderedFollowNodes =
             physicalNodes.tailMap(nodeHash + 1) // since 'tailMap' is lower-end inclusive, offset hash to exclude the current node
 
-        var followNodes: List<Node> = if (orderedFollowNodes.isEmpty()) {
+        val followNodes: List<Node> = if (orderedFollowNodes.isEmpty()) {
             // The given node is the last node on the ring, loop around.
 
             physicalNodes.tailMap(physicalNodes.firstKey()).map { it.value.first }
@@ -167,11 +162,9 @@ class Cluster {
         for (i in 0.until(actualReplicationAmount)) {
 
             // Since we double-checked that followNodes is not empty, this will never throw
-            val nextNode = followNodes.first()
+            val nextNode = followNodes[i]
 
             replicas.add(nextNode)
-
-            followNodes = followNodes.drop(0)
         }
 
         return replicas

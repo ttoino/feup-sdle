@@ -29,22 +29,27 @@ class LocalNode(
     override suspend fun put(
         key: StorageKey,
         data: ShoppingList,
+        replica: Boolean
     ): ShoppingList {
-        // TODO: implement replication, hinted handoff and request delegation
+        // TODO: hinted handoff
 
         logger.info("Storing and merging list with id ${data.id}")
 
-        val currentShoppingList = this.get(key)
+        val currentShoppingList = this.storageDriver.retrieve(key)
 
         val mergedShoppingList = currentShoppingList?.merge(data) ?: data
 
         this.storageDriver.store(key, mergedShoppingList)
 
+        if (!replica) this.cluster.getReplicationNodesFor(this).forEach {
+            it.put(key, mergedShoppingList, true)
+        }
+
         return mergedShoppingList
     }
 
-    override suspend fun get(key: StorageKey): ShoppingList? {
-        // TODO: implement replication, hinted handoff and request delegation
+    override suspend fun get(key: StorageKey, replica: Boolean): ShoppingList? {
+        // TODO: implement replication, hinted handoff
 
         return this.storageDriver.retrieve(key)
     }
@@ -54,11 +59,10 @@ class LocalNode(
 
         this.cluster.addNode(this@LocalNode)
 
-        val connectIp =
-            System.getenv("CONNECT_ADDRESS") ?: run {
-                bootstrapped = true
-                return@bootstrap
-            }
+        val connectIp = System.getenv("CONNECT_ADDRESS") ?: run {
+            bootstrapped = true
+            return@bootstrap
+        }
 
         // Issue a join request to the specified node
         var retries = 0
@@ -72,11 +76,10 @@ class LocalNode(
 
             val response: HttpResponse
             try {
-                response =
-                    httpClient.post("$connectIp/cluster") {
-                        contentType(ContentType.Application.Json)
-                        setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
-                    }
+                response = httpClient.post("$connectIp/cluster") {
+                    contentType(ContentType.Application.Json)
+                    setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
+                }
             } catch (_: Exception) {
                 // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
 

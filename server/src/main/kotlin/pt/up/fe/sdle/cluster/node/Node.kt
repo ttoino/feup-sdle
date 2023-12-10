@@ -164,12 +164,15 @@ abstract class Node protected constructor(
      *
      * It might or might be this node the one responsible for storing the given [data].
      *
-     * @param [key] the key under which to store [data]
-     * @param [data] the data to store
+     * @param [key] The key under which to store [data]
+     * @param [data] The data to store
+     * @param [replica] Whether this operation happened due to a replication event or not
+     * @return The modified shopping list
      */
     abstract suspend fun put(
         key: StorageKey,
         data: ShoppingList,
+        replica: Boolean
     ): ShoppingList
 
     /**
@@ -178,7 +181,11 @@ abstract class Node protected constructor(
      * It might or might be this node the one responsible for executing this operation.
      *
      * @param [key] the key under which the desired shopping list is stored
+     * @param [replica] Whether this operation happened due to a replication event or not
      * @return the desired shopping list, or  if not found
      */
-    abstract suspend fun get(key: StorageKey): ShoppingList?
+    abstract suspend fun get(
+        key: StorageKey,
+        replica: Boolean
+    ): ShoppingList?
 }

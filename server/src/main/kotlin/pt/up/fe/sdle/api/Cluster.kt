@@ -70,7 +70,8 @@ fun Route.loadClusterManagementRoutes() {
             val id: NodeID,
             val address: String,
             val isVirtual: Boolean,
-            val isAlive: Boolean
+            val isAlive: Boolean,
+            val replicas: List<Pair<NodeID, String>>?
         )
 
         val nodes = cluster.nodes.map {
@@ -80,8 +81,14 @@ fun Route.loadClusterManagementRoutes() {
 
             val (node, isAlive, isVirtual) = value
 
-            SerializeNode(key, node.id, node.address, isVirtual, isAlive)
-        }
+            if (isVirtual) return@map null
+
+            val replicas = cluster.getReplicationNodesFor(node).map { node2 ->
+                Pair(node2.id, node2.address)
+            }
+
+            SerializeNode(key, node.id, node.address, isVirtual, isAlive, replicas)
+        }.filterNotNull()
 
         call.respond(HttpStatusCode.OK, nodes)
     }

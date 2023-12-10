@@ -9,14 +9,11 @@ import io.ktor.server.application.*
 import io.ktor.server.plugins.autohead.*
 import io.ktor.server.plugins.cachingheaders.*
 import io.ktor.server.plugins.callid.*
-import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.request.*
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
-import org.slf4j.event.Level
 import pt.up.fe.sdle.api.configureRouting
 import pt.up.fe.sdle.cluster.node.LocalNode
 import pt.up.fe.sdle.cluster.node.Node
@@ -36,10 +33,10 @@ lateinit var logger: Logger
  */
 fun Application.module() {
     logger = environment.log
-    install(CallLogging) {
+    /*install(CallLogging) {
         level = Level.INFO
         filter { call -> call.request.path().startsWith("/") }
-    }
+    }*/
     install(AutoHeadResponse)
     install(CallId) {
         header(HttpHeaders.XRequestId)

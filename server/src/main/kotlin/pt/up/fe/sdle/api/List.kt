@@ -10,6 +10,7 @@ import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.api.plugins.validators.PathParameterValidator
 import pt.up.fe.sdle.cluster.cluster
+import pt.up.fe.sdle.cluster.node.node
 import pt.up.fe.sdle.crdt.ShoppingList
 
 /**
@@ -21,10 +22,11 @@ data class SyncPayload(
      * The shopping list to merge
      */
     val list: ShoppingList,
+
     /**
-     * Whether this request came from an external client or another node in the cluster.
+     * Whether this is a replication-related operation or not
      */
-    val handoff: Boolean = false,
+    val replica: Boolean = false,
 )
 
 /**
@@ -70,10 +72,10 @@ fun Route.loadShoppingListRoutes() {
 
         get {
             val listId = call.parameters["listId"] as String
-            val handoff = call.request.queryParameters["handoff"]
+            val replica = call.request.queryParameters["replica"]?.toBoolean() ?: false
 
-            cluster.getNodeFor(listId)?.let { node ->
-                val list = node.get(listId)
+            (if (replica) node else cluster.getNodeFor(listId))?.let { node ->
+                val list = node.get(listId, replica)
 
                 val status: HttpStatusCode =
                     if (list === null) {
@@ -91,10 +93,10 @@ fun Route.loadShoppingListRoutes() {
             val payload = call.receive<SyncPayload>()
 
             val payloadShoppingList = payload.list
-            val handoff = payload.handoff
+            val replica = payload.replica
 
-            cluster.getNodeFor(listId)?.let { node ->
-                val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList)
+            (if (replica) node else cluster.getNodeFor(listId))?.let { node ->
+                val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList, replica)
 
                 val responsePayload = SyncResponse(shoppingList)
 
