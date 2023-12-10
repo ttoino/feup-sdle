@@ -107,42 +107,40 @@ class Cluster {
         // TODO: see if this method might become a bottleneck
 
         // Filter only for the non-virtual nodes
-        val physicalNodes = nodes.filter { !it.value.third }.toSortedMap()
+        // If there's only one virtual node, return early
+        val physicalNodes = nodes.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
+
+        val actualReplicationAmount = getReplicationAmount()
 
         val nodeHash = hasher.generateHash(node.id)
-        var followNodes =
+        val orderedFollowNodes =
             physicalNodes.tailMap(nodeHash + 1) // since 'tailMap' is lower-end inclusive, offset hash to exclude the current node
 
-        if (followNodes.isEmpty()) {
+        var followNodes: List<Node> = if (orderedFollowNodes.isEmpty()) {
             // The given node is the last node on the ring, loop around.
 
-            val firstHash = physicalNodes.firstKey()
+            physicalNodes.tailMap(physicalNodes.firstKey()).map { it.value.first }
+        } else if (orderedFollowNodes.size < actualReplicationAmount) {
+            // we would get less replication nodes than what we are supposed to, add remaining nodes.
+            // Even if we add ourselves we won't be added to the replica set because of the -1 in the 'actualReplicationAmount' calculation
 
-            val nonFirstFollowNodes = physicalNodes.tailMap(physicalNodes.firstKey() + 1).apply {
-                if (this.isEmpty()) {
-                    // We loop around and then check for nodes that are not the first one.
-                    // If this is empty, it means that there is only one physical node in the cluster, which should be the node passed in as argument.
-                    // If that's the case, replication is not possible so just return early
-                    return listOf()
-                }
-            }
-
-            followNodes = nonFirstFollowNodes.plus(Pair(firstHash, physicalNodes[firstHash]!!)).toSortedMap()
+            orderedFollowNodes.values.map { it.first }.toList() + physicalNodes.tailMap(physicalNodes.firstKey())
+                .map { it.value.first }.toList()
+        } else {
+            // We have enough nodes, extract them from map values
+            orderedFollowNodes.values.map { it.first }
         }
 
         val replicas = mutableListOf<Node>()
 
-        val actualReplicationAmount = getReplicationAmount()
-
         for (i in 0.until(actualReplicationAmount)) {
 
             // Since we double-checked that followNodes is not empty, this will never throw
-            val nextNodeHash = followNodes.firstKey()
-            val (nextNode) = physicalNodes[nextNodeHash]!!
+            val nextNode = followNodes.first()
 
             replicas.add(nextNode)
 
-            followNodes = physicalNodes.tailMap(nextNodeHash + 1)
+            followNodes = followNodes.drop(0)
         }
 
         return replicas
@@ -172,10 +170,7 @@ class Cluster {
 
                 val digest = hashAlgorithm.digest()
 
-                return (digest[3].toLong() and 0xFF shl 24) or
-                        (digest[2].toLong() and 0xFF shl 16) or
-                        (digest[1].toLong() and 0xFF shl 8) or
-                        (digest[0].toLong() and 0xFF)
+                return (digest[3].toLong() and 0xFF shl 24) or (digest[2].toLong() and 0xFF shl 16) or (digest[1].toLong() and 0xFF shl 8) or (digest[0].toLong() and 0xFF)
             }
         }
     }
