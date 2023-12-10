@@ -22,7 +22,6 @@ data class SyncPayload(
      * The shopping list to merge
      */
     val list: ShoppingList,
-
     /**
      * Whether this is a replication-related operation or not
      */
@@ -54,7 +53,7 @@ data class GetResponse(
 /**
  * Load shopping list API routes
  */
-fun Route.loadShoppingListRoutes() {
+internal fun Route.loadShoppingListRoutes() {
     put("/echo") {
         @Serializable
         data class EchoPayload(val list: ShoppingList)

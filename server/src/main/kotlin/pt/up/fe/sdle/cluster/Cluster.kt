@@ -48,8 +48,7 @@ class Cluster {
      * @param id The id of the node whose virtual node hashes we want.
      * @return The hashes for the virtual nodes that a node with [id] generates.
      */
-    private fun generateVirtualNodeHashes(id: NodeID) =
-        List(virtualNodeAmount) { hasher.generateHash("$id-vn$it") }
+    private fun generateVirtualNodeHashes(id: NodeID) = List(virtualNodeAmount) { hasher.generateHash("$id-vn$it") }
 
     /**
      * Adds a new node to this cluster's node ring.
@@ -129,7 +128,6 @@ class Cluster {
      * @return The replica nodes for the given node
      */
     fun getReplicationNodesFor(node: Node): List<Node> {
-
         // TODO: see if this method might become a bottleneck
 
         // Filter only for the non-virtual nodes
@@ -142,32 +140,24 @@ class Cluster {
         val orderedFollowNodes =
             physicalNodes.tailMap(nodeHash + 1) // since 'tailMap' is lower-end inclusive, offset hash to exclude the current node
 
-        val followNodes: List<Node> = if (orderedFollowNodes.isEmpty()) {
-            // The given node is the last node on the ring, loop around.
+        val followNodes: List<Node> =
+            if (orderedFollowNodes.isEmpty()) {
+                // The given node is the last node on the ring, loop around.
 
-            physicalNodes.tailMap(physicalNodes.firstKey()).map { it.value.first }
-        } else if (orderedFollowNodes.size < actualReplicationAmount) {
-            // we would get less replication nodes than what we are supposed to, add remaining nodes.
-            // Even if we add ourselves we won't be added to the replica set because of the -1 in the 'actualReplicationAmount' calculation
+                physicalNodes.tailMap(physicalNodes.firstKey()).map { it.value.first }
+            } else if (orderedFollowNodes.size < actualReplicationAmount) {
+                // we would get less replication nodes than what we are supposed to, add remaining nodes.
+                // Even if we add ourselves we won't be added to the replica set because of the -1 in the 'actualReplicationAmount' calculation
 
-            orderedFollowNodes.values.map { it.first }.toList() + physicalNodes.tailMap(physicalNodes.firstKey())
-                .map { it.value.first }.toList()
-        } else {
-            // We have enough nodes, extract them from map values
-            orderedFollowNodes.values.map { it.first }
-        }
+                orderedFollowNodes.values.map { it.first }.toList() +
+                        physicalNodes.tailMap(physicalNodes.firstKey())
+                            .map { it.value.first }.toList()
+            } else {
+                // We have enough nodes, extract them from map values
+                orderedFollowNodes.values.map { it.first }
+            }
 
-        val replicas = mutableListOf<Node>()
-
-        for (i in 0.until(actualReplicationAmount)) {
-
-            // Since we double-checked that followNodes is not empty, this will never throw
-            val nextNode = followNodes[i]
-
-            replicas.add(nextNode)
-        }
-
-        return replicas
+        return followNodes.take(actualReplicationAmount)
     }
 
     /**
@@ -179,7 +169,6 @@ class Cluster {
     fun getReplicationAmount() = min(_nodes.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
 
     companion object {
-
         /**
          * The replication factor for nodes
          */
@@ -194,7 +183,10 @@ class Cluster {
 
                 val digest = hashAlgorithm.digest()
 
-                return (digest[3].toLong() and 0xFF shl 24) or (digest[2].toLong() and 0xFF shl 16) or (digest[1].toLong() and 0xFF shl 8) or (digest[0].toLong() and 0xFF)
+                return (digest[3].toLong() and 0xFF shl 24) or
+                        (digest[2].toLong() and 0xFF shl 16) or
+                        (digest[1].toLong() and 0xFF shl 8) or
+                        (digest[0].toLong() and 0xFF)
             }
         }
     }

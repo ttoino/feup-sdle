@@ -30,14 +30,15 @@ class RemoteNode(
     override suspend fun put(
         key: StorageKey,
         data: ShoppingList,
-        replica: Boolean
+        replica: Boolean,
     ): ShoppingList {
         val payload = SyncPayload(data, replica = replica)
 
-        if (replica)
+        if (replica) {
             logger.info("Replicating PUT call to node with id $id at address $address")
-        else
+        } else {
             logger.info("Received delegated PUT call for node with id $id at address $address")
+        }
 
         val response: HttpResponse
 
@@ -66,12 +67,13 @@ class RemoteNode(
 
     override suspend fun get(
         key: StorageKey,
-        replica: Boolean
+        replica: Boolean,
     ): ShoppingList? {
-        if (replica)
+        if (replica) {
             logger.info("Replicating GET call to node with id $id at address $address")
-        else
+        } else {
             logger.info("Received delegated GET call for node with id $id at address $address")
+        }
 
         val response: HttpResponse
 

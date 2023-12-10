@@ -22,6 +22,7 @@ typealias NodeID = String
  * The global [Node] instance that is unique to this instance of the server.<
  */
 lateinit var node: Node
+    private set
 
 /**
  * A storage node responsible for providing backup storage for the application.
@@ -172,7 +173,7 @@ abstract class Node protected constructor(
     abstract suspend fun put(
         key: StorageKey,
         data: ShoppingList,
-        replica: Boolean
+        replica: Boolean,
     ): ShoppingList
 
     /**
@@ -186,6 +187,6 @@ abstract class Node protected constructor(
      */
     abstract suspend fun get(
         key: StorageKey,
-        replica: Boolean
+        replica: Boolean,
     ): ShoppingList?
 }

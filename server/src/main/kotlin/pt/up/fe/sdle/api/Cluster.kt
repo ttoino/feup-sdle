@@ -47,7 +47,7 @@ data class LeavePayload(
  * - Join: an external node asking to join this node's cluster.
  * - Leave: an external node asking to leave this node's cluster.
  */
-fun Route.loadClusterManagementRoutes() {
+internal fun Route.loadClusterManagementRoutes() {
     post {
         val payload = call.receive<JoinPayload>()
         val nodeId = payload.nodeId
@@ -63,7 +63,6 @@ fun Route.loadClusterManagementRoutes() {
     }
 
     get {
-
         @Serializable
         class SerializeNode(
             val nodeRingKey: Long,
@@ -71,24 +70,25 @@ fun Route.loadClusterManagementRoutes() {
             val address: String,
             val isVirtual: Boolean,
             val isAlive: Boolean,
-            val replicas: List<Pair<NodeID, String>>?
+            val replicas: List<Pair<NodeID, String>>?,
         )
 
-        val nodes = cluster.nodes.map {
+        val nodes =
+            cluster.nodes.map {
+                val key = it.key
+                val value = it.value
 
-            val key = it.key
-            val value = it.value
+                val (node, isAlive, isVirtual) = value
 
-            val (node, isAlive, isVirtual) = value
+                if (isVirtual) return@map null
 
-            if (isVirtual) return@map null
+                val replicas =
+                    cluster.getReplicationNodesFor(node).map { node2 ->
+                        Pair(node2.id, node2.address)
+                    }
 
-            val replicas = cluster.getReplicationNodesFor(node).map { node2 ->
-                Pair(node2.id, node2.address)
-            }
-
-            SerializeNode(key, node.id, node.address, isVirtual, isAlive, replicas)
-        }.filterNotNull()
+                SerializeNode(key, node.id, node.address, isVirtual, isAlive, replicas)
+            }.filterNotNull()
 
         call.respond(HttpStatusCode.OK, nodes)
     }

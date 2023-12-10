@@ -29,7 +29,7 @@ class LocalNode(
     override suspend fun put(
         key: StorageKey,
         data: ShoppingList,
-        replica: Boolean
+        replica: Boolean,
     ): ShoppingList {
         // TODO: hinted handoff
 
@@ -41,14 +41,19 @@ class LocalNode(
 
         this.storageDriver.store(key, mergedShoppingList)
 
-        if (!replica) this.cluster.getReplicationNodesFor(this).forEach {
-            it.put(key, mergedShoppingList, true)
+        if (!replica) {
+            this.cluster.getReplicationNodesFor(this).forEach {
+                it.put(key, mergedShoppingList, true)
+            }
         }
 
         return mergedShoppingList
     }
 
-    override suspend fun get(key: StorageKey, replica: Boolean): ShoppingList? {
+    override suspend fun get(
+        key: StorageKey,
+        replica: Boolean,
+    ): ShoppingList? {
         // TODO: implement replication, hinted handoff
 
         return this.storageDriver.retrieve(key)
@@ -59,10 +64,11 @@ class LocalNode(
 
         this.cluster.addNode(this@LocalNode)
 
-        val connectIp = System.getenv("CONNECT_ADDRESS") ?: run {
-            bootstrapped = true
-            return@bootstrap
-        }
+        val connectIp =
+            System.getenv("CONNECT_ADDRESS") ?: run {
+                bootstrapped = true
+                return@bootstrap
+            }
 
         // Issue a join request to the specified node
         var retries = 0
@@ -76,10 +82,11 @@ class LocalNode(
 
             val response: HttpResponse
             try {
-                response = httpClient.post("$connectIp/cluster") {
-                    contentType(ContentType.Application.Json)
-                    setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
-                }
+                response =
+                    httpClient.post("$connectIp/cluster") {
+                        contentType(ContentType.Application.Json)
+                        setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
+                    }
             } catch (_: Exception) {
                 // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
 

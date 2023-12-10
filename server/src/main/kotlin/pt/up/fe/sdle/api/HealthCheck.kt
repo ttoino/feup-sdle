@@ -13,7 +13,7 @@ import kotlinx.serialization.Serializable
  * [HealthCheck] structure for responding to health-check requests.
  */
 @Serializable
-data class HealthCheck(
+internal data class HealthCheck(
     /**
      * The status of the endpoint this healthcheck is installed on. Defaults to true.
      */
@@ -35,7 +35,7 @@ data class HealthCheck(
  *
  * @param [messageProducer] a closure that receives the current [ApplicationCall] and returns a custom string to be appended on the payload.
  */
-fun Route.loadHealthCheck(messageProducer: (ApplicationCall) -> String) {
+internal fun Route.loadHealthCheck(messageProducer: (ApplicationCall) -> String) {
     get {
         val payload = HealthCheck(online = true, path = call.request.path(), message = messageProducer(call))
 
@@ -48,7 +48,7 @@ fun Route.loadHealthCheck(messageProducer: (ApplicationCall) -> String) {
 /**
  * Registers a "health check" endpoint at the path this is called.
  */
-fun Route.loadHealthCheck() {
+internal fun Route.loadHealthCheck() {
     get {
         call.respond(HttpStatusCode.OK, HealthCheck(online = true, path = call.request.path(), message = null))
     }
