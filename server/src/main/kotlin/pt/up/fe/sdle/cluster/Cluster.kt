@@ -82,7 +82,6 @@ class Cluster {
     }
 
     companion object {
-
         private class Hasher {
             private val hashAlgorithm = MessageDigest.getInstance("MD5")
 

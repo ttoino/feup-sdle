@@ -5,17 +5,16 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import pt.up.fe.sdle.cluster.Cluster
-import pt.up.fe.sdle.cluster.cluster as _cluster
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageDriverFactory
 import pt.up.fe.sdle.storage.StorageKey
 import java.util.*
+import pt.up.fe.sdle.cluster.cluster as _cluster
 
 /**
  * Represents a unique identifier for this node.
  */
 typealias NodeID = String
-
 
 /**
  * A storage node responsible for providing backup storage for the application.
@@ -24,7 +23,6 @@ abstract class Node protected constructor(
     private val _address: String = "0.0.0.0",
     private val _id: NodeID = UUID.randomUUID().toString(),
 ) {
-
     /**
      * The ID of this node.
      */
@@ -45,14 +43,14 @@ abstract class Node protected constructor(
     /**
      * HTTP Client used by a node to communicate with other nodes in its cluster.
      */
-    protected var httpClient: HttpClient = HttpClient(CIO) {
-        install(ContentNegotiation) {
-            json()
+    protected var httpClient: HttpClient =
+        HttpClient(CIO) {
+            install(ContentNegotiation) {
+                json()
+            }
         }
-    }
 
     companion object {
-
         /**
          * Whether the local node has already been initialized.
          */
@@ -148,7 +146,7 @@ abstract class Node protected constructor(
     /**
      * Bootstraps this node.
      */
-    abstract suspend fun bootstrap();
+    abstract suspend fun bootstrap()
 
     /**
      * Begins a PUT operation on this node, storing the give [data] under the given [key].

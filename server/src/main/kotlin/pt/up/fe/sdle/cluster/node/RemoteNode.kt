@@ -12,7 +12,7 @@ import java.util.*
 class RemoteNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
-): Node(address, id) {
+) : Node(address, id) {
     override suspend fun bootstrap() {
         println("")
     }
@@ -21,7 +21,6 @@ class RemoteNode(
         key: StorageKey,
         data: ShoppingList,
     ): ShoppingList {
-
         TODO("RPC to actual node")
     }
 

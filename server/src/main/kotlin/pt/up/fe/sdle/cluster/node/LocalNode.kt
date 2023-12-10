@@ -50,7 +50,11 @@ class LocalNode(
 
         this.cluster.addNode(this@LocalNode)
 
-        val connectIp = System.getenv("CONNECT_ADDRESS") ?: run { bootstrapped = true; return@bootstrap }
+        val connectIp =
+            System.getenv("CONNECT_ADDRESS") ?: run {
+                bootstrapped = true
+                return@bootstrap
+            }
 
         // Issue a join request to the specified node
         var retries = 0
@@ -62,14 +66,14 @@ class LocalNode(
         while (retries++ < MAX_RETRIES) {
             println("Attempting to join cluster of node @ '$connectIp'")
 
-            val response: HttpResponse;
+            val response: HttpResponse
             try {
-                response = httpClient.post("$connectIp/cluster") {
-                    contentType(ContentType.Application.Json)
-                    setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
-                }
+                response =
+                    httpClient.post("$connectIp/cluster") {
+                        contentType(ContentType.Application.Json)
+                        setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
+                    }
             } catch (_: Exception) {
-
                 // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
 
                 println("Attempting to join cluster of itself")
