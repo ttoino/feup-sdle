@@ -3,14 +3,20 @@
     import { v4 as uuidv4 } from "uuid";
     import id from "$lib/stores/id";
     import WrappingInput from "$lib/components/WrappingInput.svelte";
-    import { goto } from "$app/navigation";
+    import { goto, onNavigate } from "$app/navigation";
     import * as listService from "$lib/service/list";
 
     const defaultName = "My new shopping list";
     let listName = "";
 
-    const defaultId = uuidv4();
+    let defaultId = uuidv4();
     let listId = "";
+
+    onNavigate(() => {
+        listName = "";
+        listId = "";
+        defaultId = uuidv4();
+    });
 
     async function createShoppingList() {
         listName = listName || defaultName;
@@ -31,7 +37,6 @@
 >
     <label class="form-control w-full" for="name">
         <span class="label label-text">Name</span>
-
         <WrappingInput
             name="name"
             id="name"
