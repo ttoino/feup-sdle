@@ -6,6 +6,8 @@ import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import pt.up.fe.sdle.api.GetResponse
 import pt.up.fe.sdle.api.SyncPayload
 import pt.up.fe.sdle.api.SyncResponse
@@ -32,13 +34,20 @@ class RemoteNode(
         data: ShoppingList,
         replica: Boolean,
     ): ShoppingList {
-        val payload = SyncPayload(data, replica = replica)
 
         if (replica) {
             logger.info("Replicating PUT call to node with id $id at address $address")
         } else {
             logger.info("Received delegated PUT call for node with id $id at address $address")
         }
+
+        coroutineScope {
+            launch {
+                this@RemoteNode.gossipService.propagateClusterStatus(this@RemoteNode)
+            }
+        }
+
+        val payload = SyncPayload(data, replica = replica)
 
         val response: HttpResponse
 
@@ -73,6 +82,12 @@ class RemoteNode(
             logger.info("Replicating GET call to node with id $id at address $address")
         } else {
             logger.info("Received delegated GET call for node with id $id at address $address")
+        }
+
+        coroutineScope {
+            launch {
+                this@RemoteNode.gossipService.propagateClusterStatus(this@RemoteNode)
+            }
         }
 
         val response: HttpResponse

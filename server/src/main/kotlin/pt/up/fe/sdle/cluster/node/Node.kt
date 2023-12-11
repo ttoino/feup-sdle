@@ -7,6 +7,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import pt.up.fe.sdle.cluster.Cluster
+import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageDriverFactory
 import pt.up.fe.sdle.storage.StorageKey
@@ -46,17 +47,19 @@ abstract class Node protected constructor(
      *
      * This [Cluster] object represents a view of the cluster as a whole and is not de de-facto cluster instance.
      */
-    protected val cluster: Cluster get() = _cluster
+    val cluster: Cluster get() = _cluster
 
     /**
      * HTTP Client used by a node to communicate with other nodes in its cluster.
      */
-    protected var httpClient: HttpClient =
+    protected val httpClient: HttpClient =
         HttpClient(CIO) {
             install(ContentNegotiation) {
                 json()
             }
         }
+
+    protected val gossipService: GossipProtocolService = GossipProtocolService(this, httpClient)
 
     companion object {
         /**

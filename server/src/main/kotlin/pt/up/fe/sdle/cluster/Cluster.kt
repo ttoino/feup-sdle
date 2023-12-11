@@ -2,6 +2,7 @@
 
 package pt.up.fe.sdle.cluster
 
+import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.cluster.node.NodeID
 import java.security.MessageDigest
@@ -14,17 +15,39 @@ import kotlin.math.min
 val cluster = Cluster()
 
 /**
+ * A view of a node of this cluster.
+ */
+@Serializable
+data class ClusterNode(
+    /**
+     * The corresponding node id.
+     */
+    val nodeId: NodeID,
+
+    /**
+     * The address of the node.
+     */
+    val nodeAddress: String,
+
+    /**
+     * Whether the given node is alive
+     */
+    val isAlive: Boolean
+)
+
+/**
  * A [Cluster] represents a view over a collection of nodes that are logically connected.
  *
  * Each [Cluster] instance, while belonging to a single node, has enough information for any given node to work on its peers.
  */
 class Cluster {
-    private val _nodes: TreeMap<Long, Triple<Node, Boolean, Boolean>> = TreeMap()
+    // TODO: change to use ClusterNode
+    private val nodeRing: TreeMap<Long, Triple<Node, Boolean, Boolean>> = TreeMap()
 
     /**
      * The nodes present in this cluster.
      */
-    val nodes get() = _nodes.toSortedMap()
+    val nodes get() = nodeRing.toSortedMap()
 
     private val lock: Any = Any()
 
@@ -62,8 +85,8 @@ class Cluster {
         val alive = true
 
         synchronized(lock) {
-            _nodes[nodeHash] = Triple(node, alive, false)
-            virtualNodesHashes.forEach { _nodes[it] = Triple(node, alive, true) }
+            nodeRing[nodeHash] = Triple(node, alive, false)
+            virtualNodesHashes.forEach { nodeRing[it] = Triple(node, alive, true) }
         }
     }
 
@@ -77,8 +100,8 @@ class Cluster {
         val virtualNodesHashes = generateVirtualNodeHashes(node)
 
         synchronized(lock) {
-            _nodes.remove(nodeHash)
-            virtualNodesHashes.forEach { _nodes.remove(it) }
+            nodeRing.remove(nodeHash)
+            virtualNodesHashes.forEach { nodeRing.remove(it) }
         }
     }
 
@@ -92,8 +115,8 @@ class Cluster {
         val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
 
         synchronized(lock) {
-            _nodes.remove(nodeHash)
-            virtualNodesHashes.forEach { _nodes.remove(it) }
+            nodeRing.remove(nodeHash)
+            virtualNodesHashes.forEach { nodeRing.remove(it) }
         }
     }
 
@@ -104,19 +127,19 @@ class Cluster {
      * @return The corresponding node or null if: 1) it does not exist; 2) it exists but is marked "dead" (due to being unreachable)
      */
     fun getNodeFor(key: String): Node? {
-        if (_nodes.isEmpty()) {
+        if (nodeRing.isEmpty()) {
             return null
         }
 
         var hash = hasher.generateHash(key)
 
-        if (hash !in _nodes) {
-            val tailMap = _nodes.tailMap(hash)
+        if (hash !in nodeRing) {
+            val tailMap = nodeRing.tailMap(hash)
 
-            hash = if (tailMap.isEmpty()) _nodes.firstKey() else tailMap.firstKey()
+            hash = if (tailMap.isEmpty()) nodeRing.firstKey() else tailMap.firstKey()
         }
 
-        val (node, alive) = _nodes[hash]!!
+        val (node, alive) = nodeRing[hash]!!
 
         return if (alive) node else null
     }
@@ -132,7 +155,7 @@ class Cluster {
 
         // Filter only for the non-virtual nodes
         // If there's only one virtual node, return early
-        val physicalNodes = _nodes.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
+        val physicalNodes = nodeRing.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
 
         val actualReplicationAmount = getReplicationAmount()
 
@@ -161,18 +184,77 @@ class Cluster {
     }
 
     /**
+     * Updates the live-ness status of [node]
+     */
+    fun updateNodeStatus(node: ClusterNode) {
+
+        val nodeId = node.nodeId
+        val status = node.isAlive
+
+        val nodeHash = hasher.generateHash(nodeId)
+        val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
+
+        synchronized(lock) {
+            nodeRing[nodeHash]?.let {
+                nodeRing.put(nodeHash, it.copy(second = status))
+            } ?: run {
+                nodeRing.putIfAbsent(nodeHash, Triple(Node.newWith(nodeId, node.nodeAddress), status, false))
+            }
+
+            virtualNodesHashes.forEach { hash ->
+                nodeRing[hash]?.let {
+                    nodeRing.put(hash, it.copy(second = status))
+                } ?: run {
+                    nodeRing.putIfAbsent(hash, Triple(Node.newWith(nodeId, node.nodeAddress), false, true))
+                }
+            }
+        }
+    }
+
+    /**
+     * Updates the live-ness status of every node in [nodes]
+     */
+    fun updateNodeStatuses(nodes: List<ClusterNode>) {
+        synchronized(lock) {
+
+            nodes.forEach { node ->
+
+                val nodeId = node.nodeId
+                val status = node.isAlive
+
+                val nodeHash = hasher.generateHash(nodeId)
+                val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
+
+                nodeRing[nodeHash]?.let {
+                    nodeRing.put(nodeHash, it.copy(second = status))
+                } ?: run {
+                    nodeRing.putIfAbsent(nodeHash, Triple(Node.newWith(nodeId, node.nodeAddress), status, false))
+                }
+
+                virtualNodesHashes.forEach { hash ->
+                    nodeRing[hash]?.let {
+                        nodeRing.put(hash, it.copy(second = status))
+                    } ?: run {
+                        nodeRing.putIfAbsent(hash, Triple(Node.newWith(nodeId, node.nodeAddress), false, true))
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Returns the actual replication amount for nodes in this cluster.
      * This is done to prevent a node from replicating data onto itself.
      *
      * @return The actual replication amount for this cluster.
      */
-    fun getReplicationAmount() = min(_nodes.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
+    fun getReplicationAmount() = min(nodeRing.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
 
     companion object {
         /**
          * The replication factor for nodes
          */
-        val REPLICATION_FACTOR = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 3
+        val REPLICATION_FACTOR = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
 
         private class Hasher {
             private val hashAlgorithm = MessageDigest.getInstance("MD5")

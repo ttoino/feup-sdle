@@ -8,6 +8,7 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import kotlinx.serialization.Serializable
+import pt.up.fe.sdle.cluster.ClusterNode
 import pt.up.fe.sdle.cluster.cluster
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.cluster.node.NodeID
@@ -38,6 +39,23 @@ data class LeavePayload(
      * The id of the node asking to join this cluster.
      */
     val nodeId: NodeID,
+)
+
+/**
+ * Request to sync cluster view
+ */
+@Serializable
+data class ClusterSyncPayload(
+
+    /**
+     * The nodes to sync
+     */
+    val nodes: List<ClusterNode>,
+
+    /**
+     * The id of the node that sent this request
+     */
+    val node: ClusterNode,
 )
 
 /**
@@ -91,6 +109,24 @@ internal fun Route.loadClusterManagementRoutes() {
             }.filterNotNull()
 
         call.respond(HttpStatusCode.OK, nodes)
+    }
+
+    post("/sync") {
+        val payload = call.receive<ClusterSyncPayload>()
+
+        cluster.updateNodeStatus(payload.node)
+        cluster.updateNodeStatuses(payload.nodes)
+
+        val currentClusterNodes = node.cluster.nodes.values.filter { !it.third }
+
+        val gossipNodes =
+            currentClusterNodes.filter { it.first.id !== node.id && it.first.id !== payload.node.nodeId }
+
+        val clusterView = gossipNodes.map {
+            ClusterNode(it.first.id, it.first.address, it.second)
+        }
+
+        call.respond(HttpStatusCode.OK, ClusterSyncPayload(clusterView, ClusterNode(node.id, node.address, true)))
     }
 
     delete {
