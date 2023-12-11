@@ -23,7 +23,7 @@ export default class CCounter {
     }
 
     get value(): number {
-        return [...this.set.value.values()].reduce((a, b) => a + b, 0);
+        return [...this.set.internalValue.values()].reduce((a, b) => a + b[2], 0);
     }
 
     inc(id: string, v = 1): number {

@@ -15,8 +15,6 @@ interface DotsCRDT<T : Any> {
     ): Any
 }
 
-abstract class BaseDotsCRDT<T : DotsCRDT<T>> : DotsCRDT<T>
-
 @Serializable(AWMapSerializer::class)
 class AWMap<K : Any, V : DotsCRDT<V>>(
     val _set: AWSet<K>,

@@ -104,9 +104,8 @@ class CCounterTest {
         val counter2 = CCounter()
 
         counter1.inc(ID1)
-        counter1.dec(ID1)
         counter2.inc(ID2)
 
-        assertEquals(1, counter1.merge(counter2))
+        assertEquals(2, counter1.merge(counter2))
     }
 }

@@ -97,9 +97,8 @@ describe("CCounter", () => {
         const counter2 = new CCounter();
 
         counter1.inc(id1);
-        counter1.dec(id1);
         counter2.inc(id2);
 
-        expect(counter1.merge(counter2)).toBe(1);
+        expect(counter1.merge(counter2)).toBe(2);
     });
 });

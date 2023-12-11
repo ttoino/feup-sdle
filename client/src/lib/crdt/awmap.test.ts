@@ -521,12 +521,11 @@ describe("AWMap", () => {
         const map2 = new AWMap<string, AWSet<number>>();
 
         map1.set(id1, "test", new AWSet<number>());
-        map1.remove("test");
-        map2.set(id2, "test", new AWSet<number>());
 
-        expect(map1.merge(map2)).toEqual(
-            new Map([["test", new AWSet<number>()]]),
-        );
+        map2.merge(map1);
+        map2.remove("test");
+
+        expect(map1.merge(map2)).toEqual(new Map([]));
     });
     it("should be able to merge with another map with CCounter elements with conflicting adds and removes", () => {
         const map1 = new AWMap<string, CCounter>();

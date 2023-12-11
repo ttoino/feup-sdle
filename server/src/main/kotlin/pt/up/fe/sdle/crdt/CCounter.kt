@@ -12,7 +12,9 @@ import kotlinx.serialization.serializer
 class CCounter(
     val set: AWSet<Int> = AWSet(),
 ) : DotsCRDT<CCounter> {
-    val value get() = set.value.sum()
+    val value get() = set._value.sumOf {
+        it.value
+    }
 
     constructor(set: MutableSet<DottedValue<Int>>, dots: DotsContext) : this(AWSet(set, dots))
     constructor(dots: DotsContext) : this(mutableSetOf(), dots)

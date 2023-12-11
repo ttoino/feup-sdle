@@ -30,6 +30,7 @@ data class ShoppingList(
     init {
         name.set.dots = dots
         items._dots = dots
+        items._set.dots = dots
         items.map.values.forEach {
             it.count.set.dots = dots
             it.name.set.dots = dots
@@ -42,7 +43,9 @@ data class ShoppingList(
     ): ShoppingList {
         this.name.merge(other.name, false)
         this.items.merge(other.items, false)
-        this.dots.merge(other.dots)
+        if (mergeDots) {
+            this.dots.merge(other.dots)
+        }
         return this
     }
 }
