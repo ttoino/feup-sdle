@@ -1,6 +1,6 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package pt.up.fe.sdle.storage
+
+import pt.up.fe.sdle.crdt.ShoppingList
 
 /**
  * Factory that returns a new [StorageDriver] according to system configurations.
@@ -15,12 +15,12 @@ sealed class StorageDriverFactory {
         private val DRIVER_TYPE = System.getenv("DRIVER_TYPE")
 
         /**
-         * Returns a [StorageDriver] for type [T] according to [DRIVER_TYPE].
+         * Returns a [StorageDriver] for type [ShoppingList] according to [DRIVER_TYPE].
          *
          * @param T The type of data to store using the given driver.
-         * @return A new [StorageDriver] for type [T]
+         * @return A new [StorageDriver] for type [ShoppingList]
          */
-        fun <T> getDriver(): StorageDriver<T> =
+        fun getDriver(): StorageDriver =
             when (DRIVER_TYPE?.lowercase()) {
                 "file_system" -> FileSystemStorageDriver()
                 "memory" -> MemoryStorageDriver()

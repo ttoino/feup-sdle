@@ -7,6 +7,8 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.crdt.ShoppingList
@@ -22,7 +24,7 @@ class LocalNode(
     /**
      * The storage driver responsible for storing data on this node
      */
-    private var storageDriver: StorageDriver<ShoppingList>,
+    private var storageDriver: StorageDriver,
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
@@ -32,7 +34,7 @@ class LocalNode(
         data: ShoppingList,
         replica: Boolean,
     ): ShoppingList {
-        // TODO: hinted handoff
+        // TODO: implement hinted handoff
 
         logger.info("Storing and merging list with id ${data.id}")
 
@@ -43,8 +45,12 @@ class LocalNode(
         this.storageDriver.store(key, mergedShoppingList)
 
         if (!replica) {
-            this.cluster.getReplicationNodesFor(this).forEach {
-                it.put(key, mergedShoppingList, true)
+            coroutineScope {
+                this@LocalNode.cluster.getReplicationNodesFor(this@LocalNode).forEach {
+                    launch {
+                        it.put(key, mergedShoppingList, true)
+                    }
+                }
             }
         }
 

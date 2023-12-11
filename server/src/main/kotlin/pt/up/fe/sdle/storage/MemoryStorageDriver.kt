@@ -1,21 +1,23 @@
 package pt.up.fe.sdle.storage
 
+import pt.up.fe.sdle.crdt.ShoppingList
+
 /**
  * Storage driver that keeps all data in memory.
  *
  * This driver, while keeping data ephemeral, allows for faster access to data.
  */
-class MemoryStorageDriver<T> : BaseStorageDriver<T>() {
-    private val items: MutableMap<StorageKey, T> = mutableMapOf()
+class MemoryStorageDriver : BaseStorageDriver() {
+    private val items: MutableMap<StorageKey, ShoppingList> = mutableMapOf()
 
     override fun store(
         key: StorageKey,
-        data: T,
+        data: ShoppingList,
     ): Boolean {
         items[key] = data
 
         return true
     }
 
-    override fun retrieve(key: StorageKey): T? = items[key]
+    override fun retrieve(key: StorageKey): ShoppingList? = items[key]
 }
