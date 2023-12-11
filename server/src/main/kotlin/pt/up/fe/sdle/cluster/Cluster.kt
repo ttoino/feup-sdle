@@ -5,6 +5,7 @@ package pt.up.fe.sdle.cluster
 import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.cluster.node.NodeID
+import pt.up.fe.sdle.logger
 import java.security.MessageDigest
 import java.util.*
 import kotlin.math.min
@@ -179,7 +180,7 @@ class Cluster {
                 // We have enough nodes, extract them from map values
                 orderedFollowNodes.values.map { it.first }
             }
-        
+
         return followNodes.take(actualReplicationAmount)
     }
 
@@ -248,13 +249,33 @@ class Cluster {
      *
      * @return The actual replication amount for this cluster.
      */
-    fun getReplicationAmount() = min(nodeRing.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
+    private fun getReplicationAmount() = min(nodeRing.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
 
     companion object {
+
         /**
-         * The replication factor for nodes
+         * The replication factor for nodes in this cluster.
          */
-        val REPLICATION_FACTOR = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
+        val REPLICATION_FACTOR: Int get() = _replicationFactor
+        private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
+
+        /**
+         * The read quorum value for this cluster.
+         */
+        val READ_QUORUM = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 1
+
+        /**
+         * The write quorum value for this cluster.
+         */
+        val WRITE_QUORUM = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 1
+
+        init {
+            if (READ_QUORUM + WRITE_QUORUM <= REPLICATION_FACTOR) {
+                logger.warn("Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than READ_QUORUM($READ_QUORUM) + WRITE_QUORUM($WRITE_QUORUM). Tuning REPLICATION_FACTOR")
+
+                _replicationFactor = READ_QUORUM + WRITE_QUORUM - 1
+            }
+        }
 
         private class Hasher {
             private val hashAlgorithm = MessageDigest.getInstance("MD5")

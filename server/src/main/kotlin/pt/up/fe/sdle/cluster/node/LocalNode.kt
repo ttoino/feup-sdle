@@ -2,6 +2,7 @@
 
 package pt.up.fe.sdle.cluster.node
 
+import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
 import pt.up.fe.sdle.cluster.node.services.bootstrap.NodeBootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.DummyGossipProtocolService
@@ -40,22 +41,22 @@ class LocalNode(
     ): ShoppingList {
         // TODO: implement hinted handoff
 
-        logger.info("Storing and merging list with id ${data.id}")
+        logger.info("${if (replica) "REPLICA: " else ""}Storing and merging list with id ${data.id}")
 
         val mergedShoppingList: ShoppingList
-        val stored: Boolean
+        var stored = 0
         synchronized(key) {
             val currentShoppingList = this.storageDriver.retrieve(key)
 
             mergedShoppingList = currentShoppingList?.merge(data) ?: data
 
-            stored = this.storageDriver.store(key, mergedShoppingList)
+            stored += if (this.storageDriver.store(key, mergedShoppingList)) 1 else 0
         }
 
-        if (!replica) replicationService.replicate(key, mergedShoppingList)
+        if (!replica) stored += replicationService.replicatePut(key, mergedShoppingList)
 
-        if (stored) {
-            logger.info("${if (replica) "REPLICA: " else ""}Stored merged list")
+        if (stored >= Cluster.WRITE_QUORUM) {
+            logger.info("${if (replica) "REPLICA: " else ""}Quorum met! Stored merged list")
             return mergedShoppingList
         } else {
             logger.error("Failed to store data, returning previous version")
@@ -67,8 +68,25 @@ class LocalNode(
         key: StorageKey,
         replica: Boolean,
     ): ShoppingList? {
-        // TODO: implement replication, hinted handoff
+        // TODO: hinted handoff
 
-        return this.storageDriver.retrieve(key)
+        logger.info("${if (replica) "REPLICA: " else ""}Retrieving list with id $key")
+
+        val shoppingList: ShoppingList?
+        var retrieved = 0
+        synchronized(key) {
+            shoppingList = this.storageDriver.retrieve(key)
+            retrieved += if (shoppingList !== null) 1 else 0
+        }
+
+        if (!replica) retrieved += replicationService.replicateGet(key)
+
+        if (retrieved >= Cluster.READ_QUORUM) {
+            logger.info("${if (replica) "REPLICA: " else ""}Quorum met! Returning retrieved list")
+            return shoppingList
+        } else {
+            logger.error("Failed to store data, returning previous version")
+            return null
+        }
     }
 }

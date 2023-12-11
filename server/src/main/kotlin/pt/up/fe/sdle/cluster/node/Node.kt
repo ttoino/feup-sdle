@@ -4,6 +4,7 @@ package pt.up.fe.sdle.cluster.node
 
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
+import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import pt.up.fe.sdle.cluster.Cluster
@@ -57,6 +58,10 @@ abstract class Node protected constructor(
         HttpClient(CIO) {
             install(ContentNegotiation) {
                 json()
+            }
+            install(HttpTimeout) {
+                requestTimeoutMillis = 750 // TODO: Make this value configurable
+                connectTimeoutMillis = 250 // TODO: Make this value configurable
             }
         }
 
