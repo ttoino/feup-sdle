@@ -16,18 +16,37 @@ import pt.up.fe.sdle.cluster.node.node
 import pt.up.fe.sdle.logger
 
 /**
- * Request to join a cluster.
+ * Request to join this node's cluster
  */
 @Serializable
-data class JoinPayload(
+data class ClusterJoinRequest(
+
     /**
-     * The id of the node asking to join this cluster.
+     * The id of the node making this request
      */
     val nodeId: NodeID,
+
     /**
-     * The address of the node asking to join this cluster.
+     * The address of the node making this request.
      */
-    val nodeAddress: String,
+    val nodeAddress: String
+)
+
+/**
+ * Response to a cluster join request.
+ */
+@Serializable
+data class ClusterJoinResponse(
+
+    /**
+     * The view of the cluster from the perspective of the node handling this request.
+     */
+    val nodes: List<ClusterNode>,
+
+    /**
+     * The id of the node that sent this request
+     */
+    val node: ClusterNode,
 )
 
 /**
@@ -36,10 +55,11 @@ data class JoinPayload(
 @Serializable
 data class LeavePayload(
     /**
-     * The id of the node asking to join this cluster.
+     * The id of the node asking to join leave cluster.
      */
     val nodeId: NodeID,
 )
+
 
 /**
  * Request to sync cluster view
@@ -53,7 +73,7 @@ data class ClusterSyncPayload(
     val nodes: List<ClusterNode>,
 
     /**
-     * The id of the node that sent this request
+     * The node that handled this request
      */
     val node: ClusterNode,
 )
@@ -67,7 +87,8 @@ data class ClusterSyncPayload(
  */
 internal fun Route.loadClusterManagementRoutes() {
     post {
-        val payload = call.receive<JoinPayload>()
+        val payload = call.receive<ClusterJoinRequest>()
+
         val nodeId = payload.nodeId
         val nodeAddress = payload.nodeAddress
 
@@ -77,7 +98,16 @@ internal fun Route.loadClusterManagementRoutes() {
 
         cluster.addNode(joinedNode)
 
-        call.respond(HttpStatusCode.OK, JoinPayload(node.id, node.address))
+        val currentClusterNodes = node.cluster.nodes.values.filter { !it.third }
+
+        val otherNodes =
+            currentClusterNodes.filter { it.first.id !== node.id && it.first.id !== joinedNode.id }
+
+        val clusterView = otherNodes.map {
+            ClusterNode(it.first.id, it.first.address, it.second)
+        }
+
+        call.respond(HttpStatusCode.OK, ClusterJoinResponse(clusterView, ClusterNode(node.id, node.address, true)))
     }
 
     get {
@@ -119,10 +149,10 @@ internal fun Route.loadClusterManagementRoutes() {
 
         val currentClusterNodes = node.cluster.nodes.values.filter { !it.third }
 
-        val gossipNodes =
+        val otherNodes =
             currentClusterNodes.filter { it.first.id !== node.id && it.first.id !== payload.node.nodeId }
 
-        val clusterView = gossipNodes.map {
+        val clusterView = otherNodes.map {
             ClusterNode(it.first.id, it.first.address, it.second)
         }
 

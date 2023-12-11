@@ -11,6 +11,8 @@ import kotlinx.coroutines.launch
 import pt.up.fe.sdle.api.GetResponse
 import pt.up.fe.sdle.api.SyncPayload
 import pt.up.fe.sdle.api.SyncResponse
+import pt.up.fe.sdle.cluster.node.services.bootstrap.DummyBootstrapService
+import pt.up.fe.sdle.cluster.node.services.gossip.NodeGossipProtocolService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageKey
@@ -25,9 +27,10 @@ class RemoteNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
-    override suspend fun bootstrap() {
-        logger.warn("Bootstrapping RemoteNode does nothing")
-    }
+
+    override val gossipService = NodeGossipProtocolService(this, httpClient)
+
+    override val bootstrapService = DummyBootstrapService()
 
     override suspend fun put(
         key: StorageKey,

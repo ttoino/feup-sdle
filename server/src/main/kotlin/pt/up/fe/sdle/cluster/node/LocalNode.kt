@@ -2,15 +2,12 @@
 
 package pt.up.fe.sdle.cluster.node
 
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
+import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
+import pt.up.fe.sdle.cluster.node.services.bootstrap.NodeBootstrapService
+import pt.up.fe.sdle.cluster.node.services.gossip.DummyGossipProtocolService
+import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
+import pt.up.fe.sdle.cluster.node.services.replication.NodeReplicationService
+import pt.up.fe.sdle.cluster.node.services.replication.ReplicationService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageDriver
@@ -28,6 +25,13 @@ class LocalNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
+
+    /**
+     * Service responsible for replicating data for this node.
+     */
+    private val replicationService: ReplicationService = NodeReplicationService(this)
+    override val bootstrapService: BootstrapService = NodeBootstrapService(this, httpClient)
+    override val gossipService: GossipProtocolService = DummyGossipProtocolService()
 
     override suspend fun put(
         key: StorageKey,
@@ -48,18 +52,10 @@ class LocalNode(
             stored = this.storageDriver.store(key, mergedShoppingList)
         }
 
-        if (!replica) {
-            coroutineScope {
-                this@LocalNode.cluster.getReplicationNodesFor(this@LocalNode).forEach {
-                    launch {
-                        it.put(key, mergedShoppingList, true)
-                    }
-                }
-            }
-        }
+        if (!replica) replicationService.replicate(key, mergedShoppingList)
 
         if (stored) {
-            logger.info("Stored merged list")
+            logger.info("${if (replica) "REPLICA: " else ""}Stored merged list")
             return mergedShoppingList
         } else {
             logger.error("Failed to store data, returning previous version")
@@ -75,64 +71,4 @@ class LocalNode(
 
         return this.storageDriver.retrieve(key)
     }
-
-    override suspend fun bootstrap() {
-        if (bootstrapped) return
-
-        this.cluster.addNode(this@LocalNode)
-
-        val connectIp =
-            System.getenv("CONNECT_ADDRESS") ?: run {
-                bootstrapped = true
-                return@bootstrap
-            }
-
-        // Issue a join request to the specified node
-        var retries = 0
-
-        @Serializable
-        data class JoinPayload(var nodeId: String, var nodeAddress: String)
-
-        // TODO: move this logic elsewhere. This should be in a separate, dedicated software stack
-        while (retries++ < MAX_RETRIES) {
-            logger.info("Attempting to join cluster of node @ '$connectIp'")
-
-            val response: HttpResponse
-            try {
-                response =
-                    httpClient.post("$connectIp/cluster") {
-                        contentType(ContentType.Application.Json)
-                        setBody(JoinPayload(this@LocalNode.id, this@LocalNode.address))
-                    }
-            } catch (_: Exception) {
-                // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
-
-                logger.warn("Attempting to join cluster of itself")
-                return
-            }
-
-            if (response.status.isSuccess()) {
-                // Cluster join successful on the other side, mark this node as a member of the cluster
-
-                val responsePayload: JoinPayload = response.body<JoinPayload>()
-
-                val otherNode = newWith(responsePayload.nodeId, responsePayload.nodeAddress)
-
-                this.cluster.addNode(otherNode)
-
-                bootstrapped = true
-
-                return
-            }
-
-            // Exponential Backoff
-            withContext(Dispatchers.IO) {
-                Thread.sleep(retries * MIN_TIMEOUT_MS)
-            }
-        }
-
-        logger.error("Failed to join cluster of node @ '$connectIp'")
-    }
-
-    private var bootstrapped = false
 }

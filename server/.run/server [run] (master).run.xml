@@ -3,7 +3,6 @@
     <ExternalSystemSettings>
       <option name="env">
         <map>
-          <entry key="DRIVER_TYPE" value="file_system" />
           <entry key="PORT" value="8080" />
         </map>
       </option>

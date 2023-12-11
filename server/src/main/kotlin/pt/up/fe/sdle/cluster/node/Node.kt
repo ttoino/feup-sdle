@@ -7,6 +7,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import pt.up.fe.sdle.cluster.Cluster
+import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageDriverFactory
@@ -59,25 +60,21 @@ abstract class Node protected constructor(
             }
         }
 
-    protected val gossipService: GossipProtocolService = GossipProtocolService(this, httpClient)
+    /**
+     * Service responsible for handling the gossip-based membership discovery protocol of nodes.
+     */
+    protected abstract val gossipService: GossipProtocolService
+
+    /**
+     * Service responsible for bootstrapping this node.
+     */
+    protected abstract val bootstrapService: BootstrapService
 
     companion object {
         /**
          * Whether the local node has already been initialized.
          */
         private var localNodeInitialized = false
-
-        /**
-         * The maximum number of retries to try before giving up on connecting to a cluster.
-         */
-        val MAX_RETRIES = System.getenv("CLUSTER_CONNECT_MAX_RETRIES")?.toInt() ?: 3
-
-        /**
-         * The minimum amount of time, in milliseconds, to wait before attempting to reconnect to the given cluster IP.
-         *
-         * This value is used in conjunction with an integer that goes from 0 to [MAX_RETRIES] to provide an exponential backoff mechanism.
-         */
-        val MIN_TIMEOUT_MS: Long = System.getenv("CLUSTER_CONNECT_MIN_TIMEOUT")?.toLong() ?: 500
 
         /**
          * Creates a new Node object using the default storage driver.
@@ -161,7 +158,11 @@ abstract class Node protected constructor(
     /**
      * Bootstraps this node.
      */
-    abstract suspend fun bootstrap()
+    suspend fun bootstrap() {
+        this.cluster.addNode(this)
+
+        bootstrapService.bootstrap()
+    }
 
     /**
      * Begins a PUT operation on this node, storing the give [data] under the given [key].
