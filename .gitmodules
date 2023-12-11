@@ -1,0 +1,4 @@
+[submodule "client/sveltekit"]
+	path = client/sveltekit
+	url = git@github.com:LorisSigrist/kit.git
+	branch = static-public-env-in-sw
