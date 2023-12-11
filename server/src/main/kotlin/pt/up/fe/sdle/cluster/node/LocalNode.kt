@@ -22,7 +22,7 @@ class LocalNode(
     /**
      * The storage driver responsible for storing data on this node
      */
-    private var storageDriver: StorageDriver,
+    private val storageDriver: StorageDriver,
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
@@ -56,7 +56,7 @@ class LocalNode(
         if (!replica) stored += replicationService.replicatePut(key, mergedShoppingList)
 
         if (stored >= Cluster.WRITE_QUORUM) {
-            logger.info("${if (replica) "REPLICA: " else ""}Quorum met! Stored merged list")
+            logger.info("${if (replica) "REPLICA:" else "Quorum met!"} Stored merged list")
             return mergedShoppingList
         } else {
             logger.error("Failed to store data, returning previous version")
@@ -82,7 +82,7 @@ class LocalNode(
         if (!replica) retrieved += replicationService.replicateGet(key)
 
         if (retrieved >= Cluster.READ_QUORUM) {
-            logger.info("${if (replica) "REPLICA: " else ""}Quorum met! Returning retrieved list")
+            logger.info("${if (replica) "REPLICA:" else "Quorum met!"} Returning retrieved list")
             return shoppingList
         } else {
             logger.error("Failed to store data, returning previous version")

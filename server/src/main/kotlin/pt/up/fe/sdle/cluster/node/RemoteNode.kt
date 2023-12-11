@@ -3,6 +3,8 @@
 package pt.up.fe.sdle.cluster.node
 
 import io.ktor.client.call.*
+import io.ktor.client.network.sockets.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
@@ -11,6 +13,7 @@ import kotlinx.coroutines.launch
 import pt.up.fe.sdle.api.GetResponse
 import pt.up.fe.sdle.api.SyncPayload
 import pt.up.fe.sdle.api.SyncResponse
+import pt.up.fe.sdle.cluster.ClusterNode
 import pt.up.fe.sdle.cluster.node.services.bootstrap.DummyBootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.NodeGossipProtocolService
 import pt.up.fe.sdle.crdt.ShoppingList
@@ -29,7 +32,6 @@ class RemoteNode(
 ) : Node(address, id) {
 
     override val gossipService = NodeGossipProtocolService(this, httpClient)
-
     override val bootstrapService = DummyBootstrapService()
 
     override suspend fun put(
@@ -53,7 +55,6 @@ class RemoteNode(
         val payload = SyncPayload(data, replica = replica)
 
         val response: HttpResponse
-
         try {
             response =
                 httpClient.post("http://$address/list/${data.id}") {
@@ -61,16 +62,28 @@ class RemoteNode(
                     setBody(payload)
                 }
         } catch (e: Exception) {
-            // TODO: "Network error"
+            when (e) {
+                is ConnectTimeoutException,
+                is HttpRequestTimeoutException -> {
+                    // Couldn't reach node, mark it as unavailable
+                    node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
+                }
 
-            logger.error("Unknown network error: $e")
+                else -> logger.error("Unknown network error: $e")
+            }
+
+            throw e
+        }
+
+        if (!response.status.isSuccess()) {
+            // TODO: Handle request failure
+
+            logger.error("Unknown application error")
 
             return data
         }
 
-        if (!response.status.isSuccess()) {
-            TODO("Handle request failure")
-        }
+        node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, true))
 
         val responseData = response.body<SyncResponse>()
 
@@ -107,14 +120,28 @@ class RemoteNode(
         } catch (e: Exception) {
             // TODO: "Network error"
 
-            logger.error("Unknown network error: $e")
+            when (e) {
+                is ConnectTimeoutException,
+                is HttpRequestTimeoutException -> {
+                    // Couldn't reach node, mark it as unavailable
+                    node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
+                }
+
+                else -> logger.error("Unknown network error: $e")
+            }
+
+            throw e
+        }
+
+        if (!response.status.isSuccess()) {
+            // TODO: Handle request failure
+
+            logger.error("Unknown application error")
 
             return null
         }
 
-        if (!response.status.isSuccess()) {
-            TODO("Handle request failure")
-        }
+        node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, true))
 
         val responseData = response.body<GetResponse>()
 
