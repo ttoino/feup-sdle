@@ -19,6 +19,15 @@ services:
     environment:
       CONNECT_ADDRESS: http://server:${SERVER_PORT}
   
+  cluster:
+    build: ./server
+    expose:
+      - ${SERVER_PORT}
+    env_file:
+      - .env
+    environment:
+      CONNECT_ADDRESS: http://server:${SERVER_PORT}
+  
   nginx:
     image: nginx:alpine
     ports:
