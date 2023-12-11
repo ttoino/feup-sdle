@@ -179,7 +179,7 @@ class Cluster {
                 // We have enough nodes, extract them from map values
                 orderedFollowNodes.values.map { it.first }
             }
-
+        
         return followNodes.take(actualReplicationAmount)
     }
 

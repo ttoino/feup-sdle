@@ -38,11 +38,15 @@ class LocalNode(
 
         logger.info("Storing and merging list with id ${data.id}")
 
-        val currentShoppingList = this.storageDriver.retrieve(key)
+        val mergedShoppingList: ShoppingList
+        val stored: Boolean
+        synchronized(key) {
+            val currentShoppingList = this.storageDriver.retrieve(key)
 
-        val mergedShoppingList = currentShoppingList?.merge(data) ?: data
+            mergedShoppingList = currentShoppingList?.merge(data) ?: data
 
-        this.storageDriver.store(key, mergedShoppingList)
+            stored = this.storageDriver.store(key, mergedShoppingList)
+        }
 
         if (!replica) {
             coroutineScope {
@@ -54,7 +58,13 @@ class LocalNode(
             }
         }
 
-        return mergedShoppingList
+        if (stored) {
+            logger.info("Stored merged list")
+            return mergedShoppingList
+        } else {
+            logger.error("Failed to store data, returning previous version")
+            return data
+        }
     }
 
     override suspend fun get(

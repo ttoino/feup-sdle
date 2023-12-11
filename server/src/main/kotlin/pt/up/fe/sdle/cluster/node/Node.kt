@@ -86,7 +86,7 @@ abstract class Node protected constructor(
             return if (!localNodeInitialized) {
                 // This is the first call of this method for this physical node, create its singleton
 
-                val driver = StorageDriverFactory.getDriver<ShoppingList>()
+                val driver = StorageDriverFactory.getDriver()
 
                 localNodeInitialized = true
                 node = LocalNode(driver)
@@ -105,7 +105,7 @@ abstract class Node protected constructor(
             return if (!localNodeInitialized) {
                 // This is the first call of this method for this physical node, create its singleton
 
-                val driver = StorageDriverFactory.getDriver<ShoppingList>()
+                val driver = StorageDriverFactory.getDriver()
 
                 localNodeInitialized = true
                 node = LocalNode(driver, id = id)
@@ -124,7 +124,7 @@ abstract class Node protected constructor(
             return if (!localNodeInitialized) {
                 // This is the first call of this method for this physical node, create its singleton
 
-                val driver = StorageDriverFactory.getDriver<ShoppingList>()
+                val driver = StorageDriverFactory.getDriver()
 
                 localNodeInitialized = true
                 node = LocalNode(driver, address = address)
@@ -147,7 +147,7 @@ abstract class Node protected constructor(
             return if (!localNodeInitialized) {
                 // This is the first call of this method for this physical node, create its singleton
 
-                val driver = StorageDriverFactory.getDriver<ShoppingList>()
+                val driver = StorageDriverFactory.getDriver()
 
                 localNodeInitialized = true
                 node = LocalNode(driver, id = id, address = address)

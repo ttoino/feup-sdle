@@ -17,7 +17,6 @@ sealed class StorageDriverFactory {
         /**
          * Returns a [StorageDriver] for type [ShoppingList] according to [DRIVER_TYPE].
          *
-         * @param T The type of data to store using the given driver.
          * @return A new [StorageDriver] for type [ShoppingList]
          */
         fun getDriver(): StorageDriver =
