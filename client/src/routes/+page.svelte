@@ -39,7 +39,7 @@
         <h1 class="text-xl font-bold md:text-4xl">Your shopping lists</h1>
         <ul class="join join-vertical">
             {#each shoppingLists as [_, shoppingList]}
-                <ShoppingListComponent {shoppingList}  />
+                <ShoppingListComponent {shoppingList} />
             {/each}
         </ul>
     {:else}

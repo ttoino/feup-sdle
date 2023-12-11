@@ -67,7 +67,7 @@
     </MvRegister>
 
     <button
-        class="btn btn-square btn-outline btn-success join-item h-auto !rounded-none z-10"
+        class="btn btn-square btn-outline btn-success join-item z-10 h-auto !rounded-none"
         on:click={incrementItem}
     >
         <Icon src={Plus} class="h-6 w-6" />
@@ -81,7 +81,7 @@
         value={item.count.value.toString()}
     />
     <button
-        class="btn btn-square btn-outline btn-warning mr-[1px] join-item h-auto !rounded-none"
+        class="btn btn-square btn-outline btn-warning join-item mr-[1px] h-auto !rounded-none"
         on:click={decrementItem}
     >
         <Icon src={Minus} class="h-6 w-6" />

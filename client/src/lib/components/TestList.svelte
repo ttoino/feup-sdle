@@ -1,9 +1,9 @@
 <script lang="ts">
+    import { PUBLIC_SERVER_URL } from "$env/static/public";
     import { Icon, Play } from "svelte-hero-icons";
     import ShoppingList, { type ShoppingListJSON } from "$lib/list";
     import zod from "zod";
 
-    const PUBLIC_SERVER_URL = "http://localhost:8080/";
     const syncResponseSchema = zod.object({
         list: ShoppingList.schema(),
     });
@@ -70,7 +70,7 @@
 
 <main>
     <button
-        class="btn max-md:btn-square ml-4 mt-4 text-white"
+        class="btn ml-4 mt-4 text-white max-md:btn-square"
         on:click={testRequests}><Icon src={Play} class="h-6 w-6" /></button
     >
 </main>

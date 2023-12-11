@@ -21,14 +21,9 @@
 
 <dialog bind:this={dialog} class="modal">
     <div class="modal-box flex flex-row flex-wrap gap-4">
-        <p class="w-full">
-            Are you sure you want to delete this list?
-        </p>
+        <p class="w-full">Are you sure you want to delete this list?</p>
 
-        <button
-            type="button"
-            class="btn"
-            on:click|preventDefault={deleteThis}>
+        <button type="button" class="btn" on:click|preventDefault={deleteThis}>
             Yes, I am sure
         </button>
 
