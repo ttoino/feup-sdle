@@ -74,16 +74,20 @@ internal fun Route.loadShoppingListRoutes() {
             val replica = call.request.queryParameters["replica"]?.toBoolean() ?: false
 
             (if (replica) node else cluster.getNodeFor(listId))?.let { node ->
-                val list = node.get(listId, replica)
+                try {
+                    val list = node.get(listId, replica)
 
-                val status: HttpStatusCode =
-                    if (list === null) {
-                        HttpStatusCode.NotFound
-                    } else {
-                        HttpStatusCode.OK
-                    }
+                    val status: HttpStatusCode =
+                        if (list === null) {
+                            HttpStatusCode.NotFound
+                        } else {
+                            HttpStatusCode.OK
+                        }
 
-                call.respond(status, GetResponse(list))
+                    call.respond(status, GetResponse(list))
+                } catch (exception: Exception) {
+                    call.respond(HttpStatusCode.InternalServerError)
+                }
             }
         }
 
@@ -95,17 +99,16 @@ internal fun Route.loadShoppingListRoutes() {
             val replica = payload.replica
 
             (if (replica) node else cluster.getNodeFor(listId))?.let { node ->
-                val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList, replica)
+                try {
+                    val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList, replica)
 
-                val responsePayload = SyncResponse(shoppingList)
+                    val responsePayload = SyncResponse(shoppingList)
 
-                call.respond(HttpStatusCode.OK, responsePayload)
-                return@post
+                    call.respond(HttpStatusCode.OK, responsePayload)
+                } catch (exception: Exception) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
             }
-        }
-
-        loadHealthCheck {
-            "Shopping list is healthy"
         }
     }
 }

@@ -15,29 +15,31 @@ class NodeReplicationService(
     /**
      * The node for whom we want to replicate data
      */
-    val node: Node
+    val node: Node,
 ) : ReplicationService {
-
-
-    override suspend fun replicatePut(key: StorageKey, data: ShoppingList): Int {
-
+    override suspend fun replicatePut(
+        key: StorageKey,
+        data: ShoppingList,
+    ): Int {
         val results: List<ShoppingList?>
         coroutineScope {
-            results = node.cluster.getReplicationNodesFor(node).map {
-                try {
-                    it.put(key, data, true)
-                } catch (e: Exception) {
-                    when (e) {
-                        is ConnectTimeoutException,
-                        is HttpRequestTimeoutException -> {
-                            // Couldn't reach node, mark it as unavailable
-                            node.cluster.updateNodeStatus(ClusterNode(it.id, it.address, false))
+            results =
+                node.cluster.getReplicationNodesFor(node).map {
+                    try {
+                        it.put(key, data, true)
+                    } catch (e: Exception) {
+                        when (e) {
+                            is ConnectTimeoutException,
+                            is HttpRequestTimeoutException,
+                            -> {
+                                // Couldn't reach node, mark it as unavailable
+                                node.cluster.updateNodeStatus(ClusterNode(it.id, it.address, false))
+                            }
                         }
-                    }
 
-                    null
+                        null
+                    }
                 }
-            }
         }
 
         return results.count { it !== null }
@@ -46,21 +48,23 @@ class NodeReplicationService(
     override suspend fun replicateGet(key: StorageKey): Int {
         val results: List<ShoppingList?>
         coroutineScope {
-            results = node.cluster.getReplicationNodesFor(node).map {
-                try {
-                    it.get(key, true)
-                } catch (e: Exception) {
-                    when (e) {
-                        is ConnectTimeoutException,
-                        is HttpRequestTimeoutException -> {
-                            // Couldn't reach node, mark it as unavailable
-                            node.cluster.updateNodeStatus(ClusterNode(it.id, it.address, false))
+            results =
+                node.cluster.getReplicationNodesFor(node).map {
+                    try {
+                        it.get(key, true)
+                    } catch (e: Exception) {
+                        when (e) {
+                            is ConnectTimeoutException,
+                            is HttpRequestTimeoutException,
+                            -> {
+                                // Couldn't reach node, mark it as unavailable
+                                node.cluster.updateNodeStatus(ClusterNode(it.id, it.address, false))
+                            }
                         }
-                    }
 
-                    null
+                        null
+                    }
                 }
-            }
         }
 
         return results.count { it !== null }

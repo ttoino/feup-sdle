@@ -26,7 +26,6 @@ class LocalNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
-
     /**
      * Service responsible for replicating data for this node.
      */

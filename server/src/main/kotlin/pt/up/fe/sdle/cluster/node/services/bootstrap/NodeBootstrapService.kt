@@ -7,17 +7,15 @@ import io.ktor.client.statement.*
 import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import kotlinx.serialization.Serializable
+import pt.up.fe.sdle.api.ClusterJoinRequest
 import pt.up.fe.sdle.api.ClusterJoinResponse
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.logger
-
 
 /**
  * Bootstrap service that connects a node to an existing cluster if configured to tho so
  */
 class NodeBootstrapService(private val node: Node, private val httpClient: HttpClient) : BootstrapService {
-
     private var bootstrapped = false
 
     override suspend fun bootstrap() {
@@ -32,18 +30,15 @@ class NodeBootstrapService(private val node: Node, private val httpClient: HttpC
         // Issue a join request to the specified node
         var retries = 0
 
-        @Serializable
-        data class JoinPayload(var nodeId: String, var nodeAddress: String)
-
         while (retries++ < MAX_RETRIES) {
             logger.info("Attempting to join cluster of node @ '$connectIp'")
 
             val response: HttpResponse
             try {
                 response =
-                    httpClient.post("$connectIp/cluster") {
+                    httpClient.post("http://$connectIp/cluster") {
                         contentType(ContentType.Application.Json)
-                        setBody(JoinPayload(node.id, node.address))
+                        setBody(ClusterJoinRequest(node.id))
                     }
             } catch (_: Exception) {
                 // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
@@ -60,7 +55,8 @@ class NodeBootstrapService(private val node: Node, private val httpClient: HttpC
                 val otherNode = responsePayload.node
                 val clusterView = responsePayload.nodes
 
-                node.cluster.updateNodeStatus(otherNode)
+                // We can do this since we guarantee that, to reach that node, we had to make a request to 'connectIp', just recycle that.
+                node.cluster.updateNodeStatus(otherNode.copy(nodeAddress = connectIp))
                 node.cluster.updateNodeStatuses(clusterView)
 
                 bootstrapped = true

@@ -24,16 +24,14 @@ data class ClusterNode(
      * The corresponding node id.
      */
     val nodeId: NodeID,
-
     /**
      * The address of the node.
      */
     val nodeAddress: String,
-
     /**
      * Whether the given node is alive
      */
-    val isAlive: Boolean
+    val isAlive: Boolean,
 )
 
 /**
@@ -52,7 +50,6 @@ class Cluster {
 
     private val lock: Any = Any()
 
-    // TODO: retrieve this from configuration
     private val virtualNodeAmount = System.getenv("CLUSTER_VIRTUAL_NODE_AMOUNT")?.toInt() ?: 3
 
     private val hasher = Hasher()
@@ -185,10 +182,11 @@ class Cluster {
     }
 
     /**
-     * Updates the live-ness status of [node]
+     * Updates the live-ness status of [node].
+     *
+     * @param node The node whose status on this cluster we want to update.
      */
     fun updateNodeStatus(node: ClusterNode) {
-
         val nodeId = node.nodeId
         val status = node.isAlive
 
@@ -213,11 +211,12 @@ class Cluster {
     }
 
     /**
-     * Updates the live-ness status of every node in [nodes]
+     * Updates the live-ness status of every node in [nodes].
+     *
+     * @param nodes the nodes whose statuses on this cluster want to update.
      */
     fun updateNodeStatuses(nodes: List<ClusterNode>) {
         synchronized(lock) {
-
             nodes.forEach { node ->
 
                 val nodeId = node.nodeId
@@ -252,7 +251,6 @@ class Cluster {
     private fun getReplicationAmount() = min(nodeRing.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
 
     companion object {
-
         /**
          * The replication factor for nodes in this cluster.
          */
@@ -271,7 +269,9 @@ class Cluster {
 
         init {
             if (READ_QUORUM + WRITE_QUORUM <= REPLICATION_FACTOR) {
-                logger.warn("Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than READ_QUORUM($READ_QUORUM) + WRITE_QUORUM($WRITE_QUORUM). Tuning REPLICATION_FACTOR")
+                logger.warn(
+                    "Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than READ_QUORUM($READ_QUORUM) + WRITE_QUORUM($WRITE_QUORUM). Tuning REPLICATION_FACTOR",
+                )
 
                 _replicationFactor = READ_QUORUM + WRITE_QUORUM - 1
             }

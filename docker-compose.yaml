@@ -17,7 +17,7 @@ services:
     env_file:
       - .env
     environment:
-      CONNECT_ADDRESS: http://server:${SERVER_PORT}
+      CONNECT_ADDRESS: server:${SERVER_PORT}
   
   cluster:
     build: ./server
@@ -26,7 +26,7 @@ services:
     env_file:
       - .env
     environment:
-      CONNECT_ADDRESS: http://server:${SERVER_PORT}
+      CONNECT_ADDRESS: server:${SERVER_PORT}
   
   nginx:
     image: nginx:alpine

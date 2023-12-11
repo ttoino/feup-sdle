@@ -30,7 +30,6 @@ class RemoteNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
-
     override val gossipService = NodeGossipProtocolService(this, httpClient)
     override val bootstrapService = DummyBootstrapService()
 
@@ -39,9 +38,8 @@ class RemoteNode(
         data: ShoppingList,
         replica: Boolean,
     ): ShoppingList {
-
         if (replica) {
-            logger.info("Replicating PUT call to node with id $id at address $address")
+            logger.info("Attempting to replicate PUT call to node with id $id at address $address")
         } else {
             logger.info("Received delegated PUT call for node with id $id at address $address")
         }
@@ -55,21 +53,26 @@ class RemoteNode(
         val payload = SyncPayload(data, replica = replica)
 
         val response: HttpResponse
+        val endpoint = "http://$address/list/${data.id}"
         try {
+
             response =
-                httpClient.post("http://$address/list/${data.id}") {
+                httpClient.post(endpoint) {
                     contentType(ContentType.Application.Json)
                     setBody(payload)
                 }
         } catch (e: Exception) {
             when (e) {
                 is ConnectTimeoutException,
-                is HttpRequestTimeoutException -> {
+                is HttpRequestTimeoutException,
+                -> {
                     // Couldn't reach node, mark it as unavailable
+                    logger.error("Node with id $id and address $address is unreachable", e)
+
                     node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
                 }
 
-                else -> logger.error("Unknown network error: $e")
+                else -> logger.error("Unknown network error", e)
             }
 
             throw e
@@ -78,7 +81,7 @@ class RemoteNode(
         if (!response.status.isSuccess()) {
             // TODO: Handle request failure
 
-            logger.error("Unknown application error")
+            logger.error("Unknown application error: ${response.status}; Endpoint: $endpoint")
 
             return data
         }
@@ -95,7 +98,7 @@ class RemoteNode(
         replica: Boolean,
     ): ShoppingList? {
         if (replica) {
-            logger.info("Replicating GET call to node with id $id at address $address")
+            logger.info("Attempting to replicate GET call to node with id $id at address $address")
         } else {
             logger.info("Received delegated GET call for node with id $id at address $address")
         }
@@ -107,11 +110,10 @@ class RemoteNode(
         }
 
         val response: HttpResponse
-
+        val endpoint = "http://$address/list/$key"
         try {
-            // FIXME: this is a bit weird because we do not need to know that the storage key is the list id
             response =
-                httpClient.get("http://$address/list/$key") {
+                httpClient.get(endpoint) {
                     url {
                         parameters.append("replica", replica.toString())
                     }
@@ -122,21 +124,25 @@ class RemoteNode(
 
             when (e) {
                 is ConnectTimeoutException,
-                is HttpRequestTimeoutException -> {
+                is HttpRequestTimeoutException,
+                -> {
+
+                    logger.error("Node with id $id and address $address is unreachable", e)
+
                     // Couldn't reach node, mark it as unavailable
                     node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
                 }
 
-                else -> logger.error("Unknown network error: $e")
+                else -> logger.error("Unknown network error", e)
             }
 
             throw e
         }
 
         if (!response.status.isSuccess()) {
-            // TODO: Handle request failure
+            // This should not happen for "normal" response codes
 
-            logger.error("Unknown application error")
+            logger.error("Unknown application error: ${response.status}; Endpoint: $endpoint")
 
             return null
         }

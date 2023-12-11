@@ -37,6 +37,8 @@ dependencies {
     implementation("io.ktor:ktor-server-cors")
     implementation("io.ktor:ktor-server-default-headers-jvm")
     implementation("io.ktor:ktor-server-netty-jvm")
+    implementation("io.ktor:ktor-server-forwarded-header-jvm")
+    implementation("io.ktor:ktor-server-forwarded-header")
 
     implementation("io.ktor:ktor-client-core")
     implementation("io.ktor:ktor-client-cio-jvm")

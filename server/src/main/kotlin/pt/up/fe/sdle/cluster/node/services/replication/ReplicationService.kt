@@ -7,7 +7,6 @@ import pt.up.fe.sdle.storage.StorageKey
  * Service responsible for replicating data on a node.
  */
 interface ReplicationService {
-
     /**
      * Replicates a PUT operation of [data] using the given [key].
      *
@@ -15,7 +14,10 @@ interface ReplicationService {
      * @param data The data to replicate.
      * @return The number of successful replicas.
      */
-    suspend fun replicatePut(key: StorageKey, data: ShoppingList): Int
+    suspend fun replicatePut(
+        key: StorageKey,
+        data: ShoppingList,
+    ): Int
 
     /**
      * Replicates a GET operation for data stored under [key]

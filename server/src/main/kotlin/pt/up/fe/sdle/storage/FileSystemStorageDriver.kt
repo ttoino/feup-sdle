@@ -11,7 +11,6 @@ import kotlin.io.path.*
  * Storage driver that persists its contents to the file system.
  */
 class FileSystemStorageDriver : BaseStorageDriver() {
-
     override fun store(
         key: StorageKey,
         data: ShoppingList,
