@@ -4,6 +4,7 @@
 /// <reference lib="webworker" />
 import { PUBLIC_SERVER_URL } from "$env/static/public";
 import type ShoppingList from "$lib/list";
+import setup from "$lib/localforage/setup";
 import * as listService from "$lib/service/list";
 import { base, build, files, prerendered, version } from "$service-worker";
 
@@ -11,6 +12,8 @@ const sw = self as unknown as ServiceWorkerGlobalScope;
 
 const cacheName = `cache-${version}`;
 const cachedAssets = [...build, ...files, ...prerendered, `${base}/`];
+
+setup();
 
 let syncing = false;
 

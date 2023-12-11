@@ -56,19 +56,11 @@ export const sync = async (
     list: ShoppingList,
     fetch: typeof globalThis.fetch = globalThis.fetch,
 ) => {
-    console.error("Syncing list", list);
-
     const local = await syncLocal(list);
-
-    console.error("Local list", local);
 
     const remote = await syncRemote(list, fetch);
 
-    console.error("Remote list", remote);
-
     if (remote) await syncLocal(remote);
-
-    console.error("Synced list", remote ?? local);
 
     return remote ?? local;
 };
@@ -120,17 +112,11 @@ export const get = async (
     listId: string,
     fetch: typeof globalThis.fetch = globalThis.fetch,
 ) => {
-    console.error("Fetching list", listId);
-
     const local = await getLocal(listId);
-
-    console.error("Local list", local);
 
     if (local) return local;
 
     const remote = await getRemote(listId, fetch);
-
-    console.error("Remote list", remote);
 
     if (remote) return remote;
 };
