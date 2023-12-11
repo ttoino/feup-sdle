@@ -8,12 +8,13 @@
         list: ShoppingList.schema(),
     });
 
-    let counter_success_post = 0;
+    async function testRequests() {
+        let counter_success_post = 0;
+        let counter_success_get = 0;
 
-    async function testGetRequest() {
         for (let i = 0; i < 1000; i++) {
-           const listId = 'list' + i;
-           const list = ShoppingList.new(listId)
+            const listId = "list" + i;
+            const list = ShoppingList.new(listId);
 
             const syncEndpoint = `${PUBLIC_SERVER_URL}/list/${listId}`;
             try {
@@ -30,15 +31,46 @@
                 if (response.ok) {
                     counter_success_post++;
                 }
-            } catch {
-                console.log("oops");
+            } catch (err) {
+                console.log("Error ocurred! " + err);
             }
         }
-        console.log(counter_success_post + "/1000 success");
+        console.log(counter_success_post + "/1000 success - POST");
+
+        for (let i = 0; i < 1000; i++) {
+            const listId = "list" + i;
+
+            const endpoint = `${PUBLIC_SERVER_URL}/list/${listId}`;
+            try {
+                const response = await fetch(endpoint, {
+                    method: "GET",
+                    headers: {
+                        Accepts: "application/json",
+                    },
+                });
+
+                if (!response.ok) {
+                    counter_success_get++;
+                }
+
+                const parsedResponseData = syncResponseSchema.safeParse(
+                    await response.json(),
+                );
+
+                if (!parsedResponseData.success) {
+                    console.log("Not well parsed! POST");
+                }
+            } catch (err) {
+                console.log("Error ocurred! " + err);
+            }
+        }
+        console.log(counter_success_post + "/1000 success - GET");
     }
 </script>
 
 <main>
-        <button class="btn text-white max-md:btn-square mt-4 ml-4"
-        on:click={testGetRequest}><Icon src={Play} class="h-6 w-6" /></button>
+    <button
+        class="btn max-md:btn-square ml-4 mt-4 text-white"
+        on:click={testRequests}><Icon src={Play} class="h-6 w-6" /></button
+    >
 </main>
