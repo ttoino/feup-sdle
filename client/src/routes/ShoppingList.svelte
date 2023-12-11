@@ -8,31 +8,31 @@
     import DeleteListModal from "$lib/components/DeleteListModal.svelte";
 
     export let shoppingList: ShoppingList;
-    export let deleteShoppingList: (id: string) => unknown;
 </script>
 
-<li class="join join-item join-horizontal">
-    <div class="btn btn-outline join-item relative flex-1 gap-4">
+<li class="join join-item join-horizontal max-w-full">
+    <div class="btn btn-outline join-item relative flex-1 gap-4 flex-nowrap">
         <div class="flex flex-1 flex-col text-start">
-        <a
-            href="/{shoppingList.id}"
-            class="flex-1 text-start before:absolute before:inset-0 before:z-10"
-        >
-            <MVRegister
-                register={shoppingList.name}
-                let:value
-                defaultValue="Unnamed shopping list"
+            <a
+                href="/{shoppingList.id}"
+                class="text-start before:absolute before:inset-0 truncate"
             >
-                {value}
-            </MVRegister>
-        </a>
-        <span class="text-xs opacity-50">{shoppingList.id}</span>
-    </div>
-        <span class="badge badge-accent">
-            {shoppingList.items.value.size} items
+                <MVRegister
+                    register={shoppingList.name}
+                    let:value
+                    defaultValue="Unnamed shopping list"
+                >
+                    {value}
+                </MVRegister>
+            </a>
+            <span class="text-xs opacity-50 truncate">{shoppingList.id}</span>
+        </div>
+        <span class="badge badge-accent gap-[1ch]">
+            {shoppingList.items.value.size}
+            <span class="sr-only md:not-sr-only">items</span>
         </span>
     </div>
 
-    <DeleteListModal shoppingList={shoppingList} deleteShoppingList={deleteShoppingList} />
+    <DeleteListModal shoppingList={shoppingList} />
     
 </li>

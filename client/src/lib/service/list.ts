@@ -124,3 +124,6 @@ export const getAll = async () => {
 
     return Promise.all(lists.map(getLocal));
 };
+
+export const deleteLocal = async (listId: string) =>
+    await localforage.removeItem(listId);

@@ -32,11 +32,6 @@
                 shoppingLists = shoppingLists;
             },
         });
-
-    const deleteShoppingList = (id: string) => {
-        shoppingLists.delete(id);
-        shoppingLists = shoppingLists;
-    };
 </script>
 
 <div class="mx-auto flex w-full max-w-screen-lg flex-col gap-4 self-stretch">
@@ -44,7 +39,7 @@
         <h1 class="text-xl font-bold md:text-4xl">Your shopping lists</h1>
         <ul class="join join-vertical">
             {#each shoppingLists as [_, shoppingList]}
-                <ShoppingListComponent {shoppingList} {deleteShoppingList} />
+                <ShoppingListComponent {shoppingList}  />
             {/each}
         </ul>
     {:else}
