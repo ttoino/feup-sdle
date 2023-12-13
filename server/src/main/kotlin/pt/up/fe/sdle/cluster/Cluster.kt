@@ -188,26 +188,34 @@ class Cluster {
      */
     fun updateNodeStatus(node: ClusterNode) {
         val nodeId = node.nodeId
+        val nodeAddress = node.nodeAddress
         val status = node.isAlive
 
         val nodeHash = hasher.generateHash(nodeId)
         val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
 
         synchronized(lock) {
+            // TODO: what if this is the physical node
             nodeRing[nodeHash]?.let {
-                nodeRing.put(nodeHash, it.copy(second = status))
+                val updatedClusterNode = it.copy(second = status)
+
+                nodeRing.put(nodeHash, updatedClusterNode)
             } ?: run {
-                nodeRing.putIfAbsent(nodeHash, Triple(Node.newWith(nodeId, node.nodeAddress), status, false))
+                nodeRing.putIfAbsent(nodeHash, Triple(Node.newWith(nodeId, nodeAddress), status, false))
             }
 
             virtualNodesHashes.forEach { hash ->
                 nodeRing[hash]?.let {
-                    nodeRing.put(hash, it.copy(second = status))
+                    val updatedClusterNode = it.copy(second = status)
+
+                    nodeRing.put(hash, updatedClusterNode)
                 } ?: run {
-                    nodeRing.putIfAbsent(hash, Triple(Node.newWith(nodeId, node.nodeAddress), false, true))
+                    nodeRing.putIfAbsent(hash, Triple(Node.newWith(nodeId, node.nodeAddress), status, true))
                 }
             }
         }
+
+
     }
 
     /**
@@ -217,25 +225,30 @@ class Cluster {
      */
     fun updateNodeStatuses(nodes: List<ClusterNode>) {
         synchronized(lock) {
-            nodes.forEach { node ->
+            nodes.forEach { otherNode ->
 
-                val nodeId = node.nodeId
-                val status = node.isAlive
+                val nodeId = otherNode.nodeId
+                val nodeAddress = otherNode.nodeAddress
+                val status = otherNode.isAlive
 
                 val nodeHash = hasher.generateHash(nodeId)
                 val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
 
                 nodeRing[nodeHash]?.let {
-                    nodeRing.put(nodeHash, it.copy(second = status))
+                    val updatedClusterNode = it.copy(second = status)
+
+                    nodeRing.put(nodeHash, updatedClusterNode)
                 } ?: run {
-                    nodeRing.putIfAbsent(nodeHash, Triple(Node.newWith(nodeId, node.nodeAddress), status, false))
+                    nodeRing.putIfAbsent(nodeHash, Triple(Node.newWith(nodeId, nodeAddress), status, false))
                 }
 
                 virtualNodesHashes.forEach { hash ->
                     nodeRing[hash]?.let {
-                        nodeRing.put(hash, it.copy(second = status))
+                        val updatedClusterNode = it.copy(second = status)
+
+                        nodeRing.put(hash, updatedClusterNode)
                     } ?: run {
-                        nodeRing.putIfAbsent(hash, Triple(Node.newWith(nodeId, node.nodeAddress), false, true))
+                        nodeRing.putIfAbsent(hash, Triple(Node.newWith(nodeId, nodeAddress), status, true))
                     }
                 }
             }
@@ -255,17 +268,17 @@ class Cluster {
          * The replication factor for nodes in this cluster.
          */
         val REPLICATION_FACTOR: Int get() = _replicationFactor
-        private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
+        private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 2
 
         /**
          * The read quorum value for this cluster.
          */
-        val READ_QUORUM = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 1
+        val READ_QUORUM = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 2
 
         /**
          * The write quorum value for this cluster.
          */
-        val WRITE_QUORUM = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 1
+        val WRITE_QUORUM = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 2
 
         init {
             if (READ_QUORUM + WRITE_QUORUM <= REPLICATION_FACTOR) {
@@ -278,10 +291,9 @@ class Cluster {
         }
 
         private class Hasher {
-            private val hashAlgorithm = MessageDigest.getInstance("MD5")
-
             fun generateHash(key: String): Long {
-                hashAlgorithm.reset()
+                val hashAlgorithm = MessageDigest.getInstance("MD5")
+
                 hashAlgorithm.update(key.toByteArray())
 
                 val digest = hashAlgorithm.digest()

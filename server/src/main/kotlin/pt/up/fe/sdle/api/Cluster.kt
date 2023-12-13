@@ -114,6 +114,7 @@ internal fun Route.loadClusterManagementRoutes() {
             val address: String,
             val isVirtual: Boolean,
             val isAlive: Boolean,
+            val isLocal: Boolean,
             val replicas: List<Pair<NodeID, String>>?,
         )
 
@@ -122,16 +123,24 @@ internal fun Route.loadClusterManagementRoutes() {
                 val key = it.key
                 val value = it.value
 
-                val (node, isAlive, isVirtual) = value
+                val (otherNode, isAlive, isVirtual) = value
 
                 if (isVirtual) return@map null
 
                 val replicas =
-                    cluster.getReplicationNodesFor(node).map { node2 ->
+                    cluster.getReplicationNodesFor(otherNode).map { node2 ->
                         Pair(node2.id, node2.address)
                     }
 
-                SerializeNode(key, node.id, node.address, isVirtual, isAlive, replicas)
+                SerializeNode(
+                    key,
+                    otherNode.id,
+                    otherNode.address,
+                    isVirtual,
+                    isAlive,
+                    otherNode.id == node.id,
+                    replicas
+                )
             }.filterNotNull()
 
         call.respond(HttpStatusCode.OK, nodes)
@@ -140,11 +149,15 @@ internal fun Route.loadClusterManagementRoutes() {
     post("/sync") {
         val payload = call.receive<ClusterSyncPayload>()
 
-        cluster.updateNodeStatus(payload.node)
+        val requestOrigin = call.request.origin
+        val nodeIp = requestOrigin.remoteAddress
+        val nodePort = requestOrigin.localPort
+
+        cluster.updateNodeStatus(payload.node.copy(nodeAddress = "$nodeIp:$nodePort"))
         cluster.updateNodeStatuses(payload.nodes)
 
         val currentClusterNodes = node.cluster.nodes.values.filter { !it.third }
-
+        
         val otherNodes =
             currentClusterNodes.filter { it.first.id !== node.id && it.first.id !== payload.node.nodeId }
 

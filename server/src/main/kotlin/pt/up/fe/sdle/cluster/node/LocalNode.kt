@@ -43,6 +43,8 @@ class LocalNode(
         logger.info("${if (replica) "REPLICA: " else ""}Storing and merging list with id ${data.id}")
 
         val mergedShoppingList: ShoppingList
+
+        // TODO: problems when storage driver fails to store data
         var stored = 0
         synchronized(key) {
             val currentShoppingList = this.storageDriver.retrieve(key)
@@ -52,14 +54,19 @@ class LocalNode(
             stored += if (this.storageDriver.store(key, mergedShoppingList)) 1 else 0
         }
 
-        if (!replica) stored += replicationService.replicatePut(key, mergedShoppingList)
+        if (!replica) {
+            stored += replicationService.replicatePut(key, mergedShoppingList)
 
-        if (stored >= Cluster.WRITE_QUORUM) {
-            logger.info("${if (replica) "REPLICA:" else "Quorum met!"} Stored merged list")
-            return mergedShoppingList
+            if (stored >= Cluster.WRITE_QUORUM) {
+                logger.info("Quorum met! Stored merged list")
+                return mergedShoppingList
+            } else {
+                logger.error("Failed to store data, returning previous version")
+                return data
+            }
         } else {
-            logger.error("Failed to store data, returning previous version")
-            return data
+            logger.info("REPLICA: Stored merged list")
+            return mergedShoppingList
         }
     }
 
@@ -78,14 +85,19 @@ class LocalNode(
             retrieved += if (shoppingList !== null) 1 else 0
         }
 
-        if (!replica) retrieved += replicationService.replicateGet(key)
+        if (!replica) {
+            retrieved += replicationService.replicateGet(key)
 
-        if (retrieved >= Cluster.READ_QUORUM) {
-            logger.info("${if (replica) "REPLICA:" else "Quorum met!"} Returning retrieved list")
-            return shoppingList
+            if (retrieved >= Cluster.READ_QUORUM) {
+                logger.info("Quorum met! Returning retrieved list")
+                return shoppingList
+            } else {
+                logger.error("Failed to retrieve data!")
+                return null
+            }
         } else {
-            logger.error("Failed to store data, returning previous version")
-            return null
+            logger.info("REPLICA: Returning retrieved list")
+            return shoppingList
         }
     }
 }

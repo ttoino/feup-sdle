@@ -12,7 +12,7 @@
         let counter_success_post = 0;
         let counter_success_get = 0;
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 10; i++) {
             const listId = "list" + i;
             const list = ShoppingList.new(listId);
 
@@ -35,9 +35,9 @@
                 console.log("Error ocurred! " + err);
             }
         }
-        console.log(counter_success_post + "/1000 success - POST");
+        console.log(counter_success_post + "/10 success - POST");
 
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 10; i++) {
             const listId = "list" + i;
 
             const endpoint = `${PUBLIC_SERVER_URL}/list/${listId}`;
@@ -64,7 +64,7 @@
                 console.log("Error ocurred! " + err);
             }
         }
-        console.log(counter_success_post + "/1000 success - GET");
+        console.log(counter_success_get + "/10 success - GET");
     }
 </script>
 

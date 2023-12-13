@@ -41,11 +41,12 @@ class NodeGossipProtocolService(private val node: Node, private val httpClient: 
             if (response.status.isSuccess()) {
                 val payload = response.body<ClusterSyncPayload>()
 
-                node.cluster.updateNodeStatus(payload.node)
+                node.cluster.updateNodeStatus(payload.node.copy(nodeAddress = nodeAddress))
                 node.cluster.updateNodeStatuses(payload.nodes)
 
                 logger.info("Cluster view synced with node ${gossipNode.id}")
             }
+
         } catch (e: Exception) {
             logger.error(
                 "Unknown network error when propagating cluster view information to node at address $nodeAddress. Assuming it is unreachable",
