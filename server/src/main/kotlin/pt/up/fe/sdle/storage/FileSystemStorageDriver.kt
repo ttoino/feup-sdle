@@ -51,6 +51,14 @@ class FileSystemStorageDriver : BaseStorageDriver() {
         return Json.decodeFromString<ShoppingList>(data)
     }
 
+    override fun keys(): List<StorageKey> {
+        TODO("Not yet implemented")
+    }
+
+    override fun items(): List<ShoppingList> {
+        TODO("Not yet implemented")
+    }
+
     /**
      * Ensures that the data directory path exists.
      */

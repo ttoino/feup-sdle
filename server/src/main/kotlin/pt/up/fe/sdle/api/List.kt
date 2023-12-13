@@ -64,6 +64,10 @@ internal fun Route.loadShoppingListRoutes() {
         call.respond(HttpStatusCode.OK, payload)
     }
 
+    get("/lists") {
+        
+    }
+
     route("/{listId}") {
         install(PathParameterValidator) {
             pathVariable = "listId"

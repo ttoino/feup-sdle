@@ -34,7 +34,7 @@ class NodeBootstrapService(private val node: Node, private val httpClient: HttpC
             // Issue a join request to the specified node
             var retries = 0
             while (retries < MAX_RETRIES) {
-                logger.info("Attempting to join cluster @ $connectIp: attempt ${retries++}")
+                logger.info("Attempting to join cluster @ $connectIp: attempt ${++retries}")
 
                 val response: HttpResponse
                 try {

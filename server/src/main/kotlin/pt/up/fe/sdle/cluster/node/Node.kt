@@ -8,7 +8,6 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import pt.up.fe.sdle.cluster.Cluster
-import pt.up.fe.sdle.cluster.ClusterNode
 import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
 import pt.up.fe.sdle.cluster.node.services.handoff.HintedHandoffService
@@ -165,15 +164,6 @@ abstract class Node protected constructor(
                 RemoteNode(id = id, address = address)
             }
         }
-    }
-
-    /**
-     * Hints stored on this node which need to be sent to the respective coordinator node once they are back online
-     */
-    object Hints {
-
-        private val _hints: Map<ClusterNode, Queue<ShoppingList>> = mutableMapOf()
-
     }
 
     /**

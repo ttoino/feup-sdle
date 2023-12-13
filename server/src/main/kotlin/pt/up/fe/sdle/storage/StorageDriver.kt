@@ -34,4 +34,18 @@ sealed interface StorageDriver {
      * @return the data item, or null if not found.
      */
     fun retrieve(key: StorageKey): ShoppingList?
+
+    /**
+     * Returns all stored keys.
+     *
+     * @return A list of all stored keys
+     */
+    fun keys(): List<StorageKey>
+
+    /**
+     * Returns all stored data items.
+     *
+     * @return A list of all stored items.
+     */
+    fun items(): List<ShoppingList>
 }

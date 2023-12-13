@@ -32,7 +32,7 @@ interface ReplicationService {
     suspend fun replicatePut(
         key: StorageKey,
         data: ShoppingList,
-    ): Int
+    ): List<ReplicatedValue>
 
     /**
      * Replicates a GET operation for data stored under [key]

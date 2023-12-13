@@ -20,4 +20,8 @@ class MemoryStorageDriver : BaseStorageDriver() {
     }
 
     override fun retrieve(key: StorageKey): ShoppingList? = items[key]
+
+    override fun keys(): List<StorageKey> = items.keys.toList()
+
+    override fun items(): List<ShoppingList> = items.values.toList()
 }

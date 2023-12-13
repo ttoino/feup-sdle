@@ -62,7 +62,11 @@ class LocalNode(
         }
 
         if (!replica) {
-            stored += replicationService.replicatePut(key, mergedShoppingList)
+            val replicas = replicationService.replicatePut(key, mergedShoppingList)
+
+            val healthyReplicas = replicas.filter { it.success }
+
+            stored += healthyReplicas.size
 
             if (stored >= Cluster.Config.Node.Quorum.WRITE) {
                 logger.info("Quorum met! Stored merged list")
@@ -81,8 +85,6 @@ class LocalNode(
         key: StorageKey,
         replica: Boolean,
     ): ShoppingList? {
-        // TODO: hinted handoff
-
         logger.info("${if (replica) "REPLICA: " else ""}Retrieving list with id $key")
 
         val shoppingList: ShoppingList?
@@ -95,17 +97,37 @@ class LocalNode(
 
             val healthyReplicas = replicas.filter { it.success } // Get replicas that succeeded
 
+            // Here we just need to see if the replicas failed or not because we admit "null" as a valid value, so that cannot be how we measure quorum
             if (healthyReplicas.size < Cluster.Config.Node.Quorum.READ - 1) {
-                logger.error("Quorum not reached, returning null")
+                logger.error("Not enough nodes to reach quorum!")
 
-                throw Exception("Quorum not reached for reads")
+                throw Exception("Not enough nodes to reach quorum!")
             }
 
-            logger.info("REPLICA: Returning retrieved list.")
+            val groupedValues =
+                (healthyReplicas.map { it.data } + listOf(shoppingList)).groupBy {
+                    it?.hashCode()?.toString() ?: "Null"
+                }
 
-            return shoppingList ?: healthyReplicas
-                .map { it.data } // Extract the result
-                .firstOrNull { it !== null } // Try to get the first non-null result
+            if (groupedValues.none { (_, decision) -> decision.count() >= Cluster.Config.Node.Quorum.READ }) {
+                logger.error("Quorum not reached for any reads of value")
+
+                throw Exception("Quorum not reached for any reads of value")
+            }
+
+            logger.info("Read quorum reached! Returning retrieved list.")
+
+            val (_, list) = groupedValues.maxOfWith({ entry1, entry2 ->
+                val (_, decision1) = entry1
+                val (_, decision2) = entry2
+
+                decision1.count().compareTo(decision2.count())
+            }, { it })
+
+            return list.firstOrNull()
+            // return shoppingList ?: healthyReplicas
+            //     .map { it.data } // Extract the result
+            //     .firstOrNull { it !== null } // Try to get the first non-null result
         } else {
             logger.info("REPLICA: Returning retrieved list")
             return shoppingList

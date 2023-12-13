@@ -26,13 +26,13 @@ class NodeReplicationService(
     override suspend fun replicatePut(
         key: StorageKey,
         data: ShoppingList,
-    ): Int {
-        val results: List<ShoppingList?>
+    ): List<ReplicatedValue> {
+        val results: List<ReplicatedValue>
         coroutineScope {
             results =
                 node.cluster.getReplicationNodesFor(node).map {
                     try {
-                        it.put(key, data, true)
+                        ReplicatedValue(it.put(key, data, true), true)
                     } catch (e: Exception) {
                         when (e) {
                             is ConnectTimeoutException,
@@ -46,12 +46,12 @@ class NodeReplicationService(
                             }
                         }
 
-                        null
+                        ReplicatedValue(null, false)
                     }
                 }
         }
 
-        return results.count { it !== null }
+        return results
     }
 
     override suspend fun replicateGet(key: StorageKey): List<ReplicatedValue> {
