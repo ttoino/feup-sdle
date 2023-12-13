@@ -2,6 +2,8 @@ package pt.up.fe.sdle.cluster.node.services.gossip
 
 import io.ktor.client.*
 import io.ktor.client.call.*
+import io.ktor.client.network.sockets.*
+import io.ktor.client.plugins.*
 import io.ktor.client.request.*
 import io.ktor.http.*
 import pt.up.fe.sdle.api.ClusterSyncPayload
@@ -48,12 +50,25 @@ class NodeGossipProtocolService(private val node: Node, private val httpClient: 
             }
 
         } catch (e: Exception) {
-            logger.error(
-                "Unknown network error when propagating cluster view information to node at address $nodeAddress. Assuming it is unreachable",
-                e
-            )
+            when (e) {
+                is ConnectTimeoutException,
+                is HttpRequestTimeoutException,
+                -> {
+                    logger.warn("Node with id ${gossipNode.id} and address $nodeAddress is unreachable", e)
 
-            cluster.updateNodeStatus(ClusterNode(gossipNode.id, gossipNode.address, false))
+                    // Couldn't reach node, mark it as unavailable
+                    cluster.updateNodeStatus(ClusterNode(gossipNode.id, gossipNode.address, false))
+                }
+
+                else -> {
+                    logger.error(
+                        "Unknown network error when propagating cluster view information to node at address $nodeAddress. Assuming it is unreachable",
+                        e
+                    )
+
+                    cluster.updateNodeStatus(ClusterNode(gossipNode.id, gossipNode.address, false))
+                }
+            }
         }
     }
 }

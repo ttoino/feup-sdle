@@ -71,7 +71,7 @@ class RemoteNode(
                 is HttpRequestTimeoutException,
                 -> {
                     // Couldn't reach node, mark it as unavailable
-                    logger.error("Node with id $id and address $address is unreachable", e)
+                    logger.warn("Node with id $id and address $address is unreachable", e)
 
                     node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
 
@@ -86,9 +86,16 @@ class RemoteNode(
         }
 
         if (!response.status.isSuccess()) {
-            // TODO: Handle request failure
 
-            logger.error("Unknown application error: ${response.status}; Endpoint: $endpoint")
+            when (true) {
+                (response.status == HttpStatusCode.BadRequest) -> {
+                    logger.warn("Node with id $id @ $address failed when merging list with id $key.")
+                }
+
+                else -> {
+                    logger.error("Unknown application error: ${response.status}; Endpoint: $endpoint")
+                }
+            }
 
             return data
         }
@@ -127,29 +134,34 @@ class RemoteNode(
                     accept(ContentType.Application.Json)
                 }
         } catch (e: Exception) {
-            // TODO: "Network error"
-
             when (e) {
                 is ConnectTimeoutException,
                 is HttpRequestTimeoutException,
                 -> {
-
-                    logger.error("Node with id $id and address $address is unreachable", e)
+                    logger.warn("Node with id $id and address $address is unreachable", e)
 
                     // Couldn't reach node, mark it as unavailable
                     node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
                 }
 
-                else -> logger.error("Unknown network error", e)
+                else -> {
+                    logger.error("Unknown network error", e)
+                }
             }
 
             throw e
         }
 
         if (!response.status.isSuccess()) {
-            // This should not happen for "normal" response codes
+            when (true) {
+                (response.status == HttpStatusCode.NotFound) -> {
+                    logger.warn("Node with id $id @ $address does not have a replica of the list with id $key.")
+                }
 
-            logger.error("Unknown application error: ${response.status}; Endpoint: $endpoint")
+                else -> {
+                    logger.error("Unknown application error: ${response.status}; Endpoint: $endpoint")
+                }
+            }
 
             return null
         }

@@ -43,12 +43,23 @@ class NodeHintedHandoffService : HintedHandoffService {
                     val listId = list.id
 
                     try {
-                        val newList = node.put(listId, list, replica)
+                        node.put(listId, list, replica)
 
-                    } catch (e: HttpConnectTimeoutException) {
-                        logger.error(
-                            "Node @ $nodeAddress with id ${node.id} is still unreachable, hint re-queued to be sent later",
-                        )
+                        // TODO: we should merge so that we save a few steps later
+
+                    } catch (e: Exception) {
+
+                        when (e) {
+                            is HttpConnectTimeoutException -> {
+                                logger.warn(
+                                    "Node @ $nodeAddress with id ${node.id} is still unreachable, hint re-queued to be sent later",
+                                )
+                            }
+
+                            else -> {
+                                logger.error("Unknown error", e)
+                            }
+                        }
 
                         // storeHint(hint) this is already handled by the node since it is (mostly if not every time) a sRemoteNode
                     }

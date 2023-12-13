@@ -183,6 +183,21 @@ class Cluster {
     }
 
     /**
+     * Gets a list ordered by preference of replication for a given key. The first elements is always the node holding the key.
+     *
+     * @return A list of nodes that are responsible for replicating the given key
+     */
+    fun getReplicationNodesFor(id: NodeID): List<Node> {
+
+        val physicalNodes = nodeRing.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
+
+        val hash = hasher.generateHash(id)
+
+        return physicalNodes.tailMap(hash).map { it.value.first }.toList() + physicalNodes.headMap(hash)
+            .map { it.value.first }.toList()
+    }
+
+    /**
      * Updates the live-ness status of [node].
      *
      * @param node The node whose status on this cluster we want to update.
@@ -292,7 +307,7 @@ class Cluster {
      *
      * @return The actual replication amount for this cluster.
      */
-    private fun getReplicationAmount() = min(getPhysicalNodeCount() - 1, Config.Node.REPLICATION_FACTOR)
+    fun getReplicationAmount() = min(getPhysicalNodeCount() - 1, Config.Node.REPLICATION_FACTOR)
 
     /**
      * Configuration values for this cluster
@@ -357,7 +372,7 @@ class Cluster {
              * The replication factor for nodes in this cluster.
              */
             val REPLICATION_FACTOR: Int get() = _replicationFactor
-            private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 2
+            private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
 
             /**
              * Node communication quorum configurations
@@ -365,14 +380,19 @@ class Cluster {
             object Quorum {
 
                 /**
+                 * Whether the quorum mechanisms applied should be sloppy or not.
+                 */
+                val SLOPPY = System.getenv("CLUSTER_NODE_SLOPPY_QUORUM")?.toBoolean() ?: true
+
+                /**
                  * The read quorum value for this cluster.
                  */
-                val READ = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 2
+                val READ = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 1
 
                 /**
                  * The write quorum value for this cluster.
                  */
-                val WRITE = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 2
+                val WRITE = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 1
 
                 init {
                     if (READ + WRITE <= REPLICATION_FACTOR) {

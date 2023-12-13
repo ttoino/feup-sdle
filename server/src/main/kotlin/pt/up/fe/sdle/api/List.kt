@@ -12,6 +12,7 @@ import pt.up.fe.sdle.api.plugins.validators.PathParameterValidator
 import pt.up.fe.sdle.cluster.cluster
 import pt.up.fe.sdle.cluster.node.node
 import pt.up.fe.sdle.crdt.ShoppingList
+import pt.up.fe.sdle.logger
 
 /**
  * Payload sent on PUT requests for this node to merge its view of a given shopping list
@@ -65,7 +66,7 @@ internal fun Route.loadShoppingListRoutes() {
     }
 
     get("/lists") {
-        
+
     }
 
     route("/{listId}") {
@@ -77,6 +78,7 @@ internal fun Route.loadShoppingListRoutes() {
             val listId = call.parameters["listId"] as String
             val replica = call.request.queryParameters["replica"]?.toBoolean() ?: false
 
+            // if this is a replicated request we want to store locally, regardless of who "holds" the given listId
             (if (replica) node else cluster.getNodeFor(listId))?.let { node ->
                 try {
                     val list = node.get(listId, replica)
@@ -90,7 +92,8 @@ internal fun Route.loadShoppingListRoutes() {
 
                     call.respond(status, GetResponse(list))
                 } catch (exception: Exception) {
-                    call.respond(HttpStatusCode.InternalServerError)
+                    logger.error("Exception bubbled up to router layer!!", exception)
+                    call.respond(HttpStatusCode.NotFound, GetResponse(null))
                 }
             }
         }
@@ -102,6 +105,7 @@ internal fun Route.loadShoppingListRoutes() {
             val payloadShoppingList = payload.list
             val replica = payload.replica
 
+            // if this is a replicated request we want to store locally, regardless of who "holds" the given listId
             (if (replica) node else cluster.getNodeFor(listId))?.let { node ->
                 try {
                     val shoppingList = node.put(payloadShoppingList.id, payloadShoppingList, replica)
@@ -110,7 +114,7 @@ internal fun Route.loadShoppingListRoutes() {
 
                     call.respond(HttpStatusCode.OK, responsePayload)
                 } catch (exception: Exception) {
-                    call.respond(HttpStatusCode.BadRequest)
+                    call.respond(HttpStatusCode.BadRequest, SyncResponse(payloadShoppingList))
                 }
             }
         }

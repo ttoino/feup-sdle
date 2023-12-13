@@ -51,14 +51,13 @@ class LocalNode(
 
         val mergedShoppingList: ShoppingList
 
-        // TODO: problems when storage driver fails to store data
-        var stored = 0
+        var stored: Boolean
         synchronized(key) {
             val currentShoppingList = this.storageDriver.retrieve(key)
 
             mergedShoppingList = currentShoppingList?.merge(data) ?: data
 
-            stored += if (this.storageDriver.store(key, mergedShoppingList)) 1 else 0
+            stored = this.storageDriver.store(key, mergedShoppingList)
         }
 
         if (!replica) {
@@ -66,14 +65,22 @@ class LocalNode(
 
             val healthyReplicas = replicas.filter { it.success }
 
-            stored += healthyReplicas.size
+            if (healthyReplicas.size < Cluster.Config.Node.Quorum.WRITE - (if (stored) 1 else 0)) {
+                logger.error("Not enough nodes to reach quorum!")
 
-            if (stored >= Cluster.Config.Node.Quorum.WRITE) {
-                logger.info("Quorum met! Stored merged list")
-                return mergedShoppingList
+                throw Exception("Not enough nodes to reach quorum!")
+            }
+
+            if (Cluster.Config.Node.Quorum.SLOPPY) {
+                logger.info("Write sloppy quorum reached! Returning own merged list.")
+
+                return if (stored) mergedShoppingList else healthyReplicas.map { it.data }.first()!!
+
             } else {
-                logger.error("Failed to store data, returning previous version")
-                return data
+                // TODO: implement stricter quorum semantics for PUT operations
+
+                // FIXME: this is not the right solution but the compiler throws a fit
+                return mergedShoppingList
             }
         } else {
             logger.info("REPLICA: Stored merged list")
@@ -104,30 +111,35 @@ class LocalNode(
                 throw Exception("Not enough nodes to reach quorum!")
             }
 
-            val groupedValues =
-                (healthyReplicas.map { it.data } + listOf(shoppingList)).groupBy {
-                    it?.hashCode()?.toString() ?: "Null"
+            if (Cluster.Config.Node.Quorum.SLOPPY) {
+                logger.info("Read sloppy quorum reached! Returning retrieved list.")
+
+                return shoppingList ?: healthyReplicas
+                    .map { it.data } // Extract the result
+                    .firstOrNull { it !== null } // Try to get the first non-null result
+            } else {
+                val groupedValues =
+                    (healthyReplicas.map { it.data } + listOf(shoppingList)).groupBy {
+                        it?.hashCode()?.toString() ?: "Null"
+                    }
+
+                if (groupedValues.none { (_, decision) -> decision.count() >= Cluster.Config.Node.Quorum.READ }) {
+                    logger.error("Quorum not reached for any reads of value")
+
+                    throw Exception("Quorum not reached for any reads of value")
                 }
 
-            if (groupedValues.none { (_, decision) -> decision.count() >= Cluster.Config.Node.Quorum.READ }) {
-                logger.error("Quorum not reached for any reads of value")
+                logger.info("Read quorum reached! Returning retrieved list.")
 
-                throw Exception("Quorum not reached for any reads of value")
+                val (_, list) = groupedValues.maxOfWith({ entry1, entry2 ->
+                    val (_, decision1) = entry1
+                    val (_, decision2) = entry2
+
+                    decision1.count().compareTo(decision2.count())
+                }, { it })
+
+                return list.firstOrNull()
             }
-
-            logger.info("Read quorum reached! Returning retrieved list.")
-
-            val (_, list) = groupedValues.maxOfWith({ entry1, entry2 ->
-                val (_, decision1) = entry1
-                val (_, decision2) = entry2
-
-                decision1.count().compareTo(decision2.count())
-            }, { it })
-
-            return list.firstOrNull()
-            // return shoppingList ?: healthyReplicas
-            //     .map { it.data } // Extract the result
-            //     .firstOrNull { it !== null } // Try to get the first non-null result
         } else {
             logger.info("REPLICA: Returning retrieved list")
             return shoppingList
