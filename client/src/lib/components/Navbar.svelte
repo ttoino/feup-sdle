@@ -36,10 +36,6 @@
                 class:text-red-600={!$autoSync}>{$autoSync ? "On" : "Off"}</span
             ></span
         >
-        <Icon
-            src={$online ? Signal : SignalSlash}
-            class="text-gre h-6 w-6 md:hidden"
-        />
     </button>
     <NewListModal />
 </nav>
