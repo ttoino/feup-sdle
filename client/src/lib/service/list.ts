@@ -118,7 +118,11 @@ export const get = async (
 
     const remote = await getRemote(listId, fetch);
 
-    if (remote) return remote;
+    if (remote) {
+        syncLocal(remote);
+
+        return remote
+    };
 };
 
 export const getAll = async () => {

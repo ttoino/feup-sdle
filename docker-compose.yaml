@@ -4,7 +4,7 @@ services:
     build:
       context: ./client
       args:
-        SERVER_URL: ${PUBLIC_SCHEME}://${PUBLIC_HOST}:${PUBLIC_PORT}/${SERVER_PATH}
+        SERVER_URL: ${PUBLIC_SCHEME}://${PUBLIC_HOST}:${PUBLIC_PORT}${SERVER_PATH}
     expose:
       - ${CLIENT_PORT}
     env_file:

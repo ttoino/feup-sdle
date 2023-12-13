@@ -3,7 +3,6 @@
     import { Icon, Home, Signal, SignalSlash } from "svelte-hero-icons";
     import NewListModal from "./NewListModal.svelte";
     import ThemePicker from "./ThemePicker.svelte";
-    import autoSync from "$lib/stores/sync";
 </script>
 
 <nav class="navbar sticky top-0 z-50 gap-2 bg-base-300 md:gap-4">
@@ -24,18 +23,6 @@
             >{$online ? "Online" : "Offline"}</span
         >
         <Icon src={$online ? Signal : SignalSlash} class="h-6 w-6 md:hidden" />
-    </button>
-    <button
-        class="btn btn-ghost max-md:btn-square"
-        on:click={() => autoSync.update((v) => !v)}
-    >
-        <span class="sr-only md:not-sr-only"
-            >Auto Sync: <span
-                class="font-bold"
-                class:text-green-600={$autoSync}
-                class:text-red-600={!$autoSync}>{$autoSync ? "On" : "Off"}</span
-            ></span
-        >
     </button>
     <NewListModal />
 </nav>
