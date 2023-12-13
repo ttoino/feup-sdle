@@ -21,7 +21,7 @@ sealed class StorageDriverFactory {
          * @return A new [StorageDriver] for type [ShoppingList]
          */
         fun getDriver(): StorageDriver =
-            when (DRIVER_TYPE.lowercase()) {
+            when (DRIVER_TYPE?.lowercase()) {
                 "file_system" -> FileSystemStorageDriver()
                 "memory" -> MemoryStorageDriver()
                 else -> MemoryStorageDriver() // TODO: add more options

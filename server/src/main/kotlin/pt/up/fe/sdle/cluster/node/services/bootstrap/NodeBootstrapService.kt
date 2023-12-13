@@ -22,58 +22,61 @@ class NodeBootstrapService(private val node: Node, private val httpClient: HttpC
     override suspend fun bootstrap() {
         if (bootstrapped) return
 
-        val connectIp =
+        val primaryConnectIp =
             Cluster.Config.Bootstrap.CONNECT_ADDRESS ?: run {
                 bootstrapped = true
                 return
             }
 
-        // Issue a join request to the specified node
-        var retries = 0
+        val connectIps = listOf(primaryConnectIp) + Cluster.Config.Bootstrap.CONNECT_ADDRESSES
 
-        while (retries++ < MAX_RETRIES) {
-            logger.info("Attempting to join cluster of node @ '$connectIp'")
+        ips@ for (connectIp in connectIps) {
+            // Issue a join request to the specified node
+            var retries = 0
+            while (retries < MAX_RETRIES) {
+                logger.info("Attempting to join cluster @ $connectIp: attempt ${retries++}")
 
-            val response: HttpResponse
-            try {
-                response =
-                    httpClient.post("http://$connectIp/cluster") {
-                        contentType(ContentType.Application.Json)
-                        setBody(ClusterJoinRequest(node.id))
-                    }
-            } catch (_: Exception) {
-                // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
+                val response: HttpResponse
+                try {
+                    response =
+                        httpClient.post("http://$connectIp/cluster") {
+                            contentType(ContentType.Application.Json)
+                            setBody(ClusterJoinRequest(node.id))
+                        }
+                } catch (_: Exception) {
+                    // TODO: handle network errors, for now deal with this as if it were a node connecting to itself
 
-                logger.warn("Attempting to join cluster of itself")
-                return
+                    logger.warn("Attempting to join cluster of itself")
+                    continue@ips
+                }
+
+                if (response.status.isSuccess()) {
+                    // Cluster join successful on the other side, mark this node as a member of the cluster
+
+                    val responsePayload = response.body<ClusterJoinResponse>()
+
+                    val otherNode = responsePayload.node
+                    val clusterView = responsePayload.nodes
+
+                    // We can do this since we guarantee that, to reach that node, we had to make a request to 'connectIp', just recycle that.
+                    node.cluster.updateNodeStatus(otherNode.copy(nodeAddress = connectIp))
+                    node.cluster.updateNodeStatuses(clusterView)
+
+                    bootstrapped = true
+
+                    logger.info("Joined cluster @ '$connectIp'")
+
+                    continue@ips
+                }
+
+                // Exponential Backoff
+                withContext(Dispatchers.IO) {
+                    Thread.sleep(retries * MIN_TIMEOUT_MS)
+                }
             }
 
-            if (response.status.isSuccess()) {
-                // Cluster join successful on the other side, mark this node as a member of the cluster
-
-                val responsePayload = response.body<ClusterJoinResponse>()
-
-                val otherNode = responsePayload.node
-                val clusterView = responsePayload.nodes
-
-                // We can do this since we guarantee that, to reach that node, we had to make a request to 'connectIp', just recycle that.
-                node.cluster.updateNodeStatus(otherNode.copy(nodeAddress = connectIp))
-                node.cluster.updateNodeStatuses(clusterView)
-
-                bootstrapped = true
-
-                logger.info("Joined cluster of node @ '$connectIp'")
-
-                return
-            }
-
-            // Exponential Backoff
-            withContext(Dispatchers.IO) {
-                Thread.sleep(retries * MIN_TIMEOUT_MS)
-            }
+            logger.error("Failed to join cluster @ '$connectIp'")
         }
-
-        logger.error("Failed to join cluster of node @ '$connectIp'")
     }
 
     private companion object {

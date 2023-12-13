@@ -335,7 +335,7 @@ class Cluster {
             /**
              * The type of driver to return, computed from system configs.
              */
-            val DRIVER_TYPE: String = System.getenv("CLUSTER_STORAGE_DRIVER_TYPE")
+            val DRIVER_TYPE: String? = System.getenv("CLUSTER_STORAGE_DRIVER_TYPE")
 
             /**
              * Configuration values for the [FileSystemStorageDriver]
