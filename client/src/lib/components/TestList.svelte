@@ -49,7 +49,7 @@
                     },
                 });
 
-                if (!response.ok) {
+                if (response.ok) {
                     counter_success_get++;
                 }
 

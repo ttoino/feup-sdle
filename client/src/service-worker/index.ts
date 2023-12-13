@@ -6,6 +6,7 @@ import { PUBLIC_SERVER_URL } from "$env/static/public";
 import type ShoppingList from "$lib/list";
 import setup from "$lib/localforage/setup";
 import * as listService from "$lib/service/list";
+import autoSync from "$lib/stores/sync";
 import { base, build, files, prerendered, version } from "$service-worker";
 
 const sw = self as unknown as ServiceWorkerGlobalScope;
@@ -70,12 +71,16 @@ sw.addEventListener("fetch", (event) => {
     event.respondWith(respondWithCachedAsset());
 });
 
+let autoSyncChanges = true;
+autoSync.subscribe((value) => (autoSyncChanges = value));
+
 const sync = async () => {
     if ((await sw.clients.matchAll()).length === 0) return (syncing = false);
 
-    await listService.syncAll(
-        (await listService.getAll()).filter((l) => l) as ShoppingList[],
-    );
+    if (autoSyncChanges)
+        await listService.syncAll(
+            (await listService.getAll()).filter((l) => l) as ShoppingList[],
+        );
 
     setTimeout(sync, 1000 * 5);
 };
