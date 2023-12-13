@@ -8,6 +8,7 @@ import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageKey
 
+
 /**
  * Replicates data for a given [node]
  */
@@ -53,13 +54,13 @@ class NodeReplicationService(
         return results.count { it !== null }
     }
 
-    override suspend fun replicateGet(key: StorageKey): List<Pair<ShoppingList?, Boolean>> {
-        val results: List<Pair<ShoppingList?, Boolean>>
+    override suspend fun replicateGet(key: StorageKey): List<ReplicatedValue> {
+        val results: List<ReplicatedValue>
         coroutineScope {
             results =
                 node.cluster.getReplicationNodesFor(node).map {
                     try {
-                        Pair(it.get(key, true), true)
+                        ReplicatedValue(it.get(key, true), true)
                     } catch (e: Exception) {
                         when (e) {
                             is ConnectTimeoutException,
@@ -70,7 +71,7 @@ class NodeReplicationService(
                             }
                         }
 
-                        Pair(null, false)
+                        ReplicatedValue(null, false)
                     }
                 }
         }

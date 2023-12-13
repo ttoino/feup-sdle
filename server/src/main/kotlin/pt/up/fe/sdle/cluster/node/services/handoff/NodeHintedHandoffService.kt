@@ -3,6 +3,7 @@ package pt.up.fe.sdle.cluster.node.services.handoff
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.logger
 import java.net.http.HttpConnectTimeoutException
 import java.util.concurrent.ConcurrentLinkedQueue
@@ -57,6 +58,6 @@ class NodeHintedHandoffService : HintedHandoffService {
     }
 
     companion object {
-        private const val HINT_DELAY_S: Int = 1
+        private val HINT_DELAY_S = Cluster.Config.Node.Services.HintedHandoff.HINT_DELAY_S
     }
 }

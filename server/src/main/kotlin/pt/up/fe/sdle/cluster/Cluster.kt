@@ -7,6 +7,7 @@ import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.cluster.node.NodeID
 import pt.up.fe.sdle.cluster.node.node
 import pt.up.fe.sdle.logger
+import pt.up.fe.sdle.storage.FileSystemStorageDriver
 import java.security.MessageDigest
 import java.util.*
 import kotlin.math.min
@@ -291,34 +292,135 @@ class Cluster {
      *
      * @return The actual replication amount for this cluster.
      */
-    private fun getReplicationAmount() = min(getPhysicalNodeCount() - 1, REPLICATION_FACTOR)
+    private fun getReplicationAmount() = min(getPhysicalNodeCount() - 1, Config.Node.REPLICATION_FACTOR)
 
-    companion object {
-        /**
-         * The replication factor for nodes in this cluster.
-         */
-        val REPLICATION_FACTOR: Int get() = _replicationFactor
-        private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 2
+    /**
+     * Configuration values for this cluster
+     */
+    object Config {
 
         /**
-         * The read quorum value for this cluster.
+         * Configuration options when bootstrapping a node.
          */
-        val READ_QUORUM = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 2
+        object Bootstrap {
+
+            /**
+             * The initial cluster address to connect to.
+             */
+            val CONNECT_ADDRESS: String? = System.getenv("CONNECT_ADDRESS")
+
+            /**
+             * List of additional addresses to connect to when bootstrapping this node.
+             */
+            val CONNECT_ADDRESSES: List<String> = listOf()
+
+            /**
+             * The minimum amount of time, in milliseconds, to wait before attempting to reconnect to the given cluster IP.
+             *
+             * This value is used in conjunction with an integer that goes from 0 to [MAX_RETRIES] to provide an exponential backoff mechanism.
+             */
+            val MIN_TIMEOUT_MS: Long = System.getenv("CLUSTER_BOOTSTRAP_MIN_TIMEOUT")?.toLong() ?: 500
+
+            /**
+             * The maximum number of retries to try before giving up on connecting to a cluster.
+             */
+            val MAX_RETRIES = System.getenv("CLUSTER_BOOTSTRAP_MAX_RETRIES")?.toInt() ?: 3
+        }
 
         /**
-         * The write quorum value for this cluster.
+         * Storage layer configuration
          */
-        val WRITE_QUORUM = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 2
+        object Storage {
 
-        init {
-            if (READ_QUORUM + WRITE_QUORUM <= REPLICATION_FACTOR) {
-                logger.warn(
-                    "Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than READ_QUORUM($READ_QUORUM) + WRITE_QUORUM($WRITE_QUORUM). Tuning REPLICATION_FACTOR",
-                )
+            /**
+             * The type of driver to return, computed from system configs.
+             */
+            val DRIVER_TYPE: String = System.getenv("CLUSTER_STORAGE_DRIVER_TYPE")
 
-                _replicationFactor = READ_QUORUM + WRITE_QUORUM - 1
+            /**
+             * Configuration values for the [FileSystemStorageDriver]
+             */
+            object FileSystem {
+
+                /**
+                 * The location where files are stored under
+                 */
+                val DATA_FILE_LOCATION: String = System.getenv("CLUSTER_STORAGE_DRIVER_FILESYSTEM_DATA_PATH") ?: "data"
             }
         }
+
+        /**
+         * Node functionality configuration
+         */
+        object Node {
+            /**
+             * The replication factor for nodes in this cluster.
+             */
+            val REPLICATION_FACTOR: Int get() = _replicationFactor
+            private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 2
+
+            /**
+             * Node communication quorum configurations
+             */
+            object Quorum {
+
+                /**
+                 * The read quorum value for this cluster.
+                 */
+                val READ = System.getenv("CLUSTER_NODE_READ_QUORUM")?.toInt() ?: 2
+
+                /**
+                 * The write quorum value for this cluster.
+                 */
+                val WRITE = System.getenv("CLUSTER_NODE_WRITE_QUORUM")?.toInt() ?: 2
+
+                init {
+                    if (READ + WRITE <= REPLICATION_FACTOR) {
+                        logger.warn(
+                            "Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than READ_QUORUM($READ) + WRITE_QUORUM($WRITE). Tuning REPLICATION_FACTOR",
+                        )
+
+                        _replicationFactor = READ + WRITE - 1
+                    }
+                }
+            }
+
+            /**
+             * Configuration for requests originating from a node.
+             */
+            object Request {
+
+                /**
+                 * Timeout in milliseconds for a request to complete.
+                 */
+                val TIMEOUT_MS = System.getenv("CLUSTER_NODE_REQUEST_TIMEOUT_MS")?.toLong() ?: 1500
+
+                /**
+                 * Timeout in milliseconds for a client to establish a connection.
+                 */
+                val CONNECT_TIMEOUT_MS = System.getenv("CLUSTER_NODE_CONNECT_TIMEOUT_MS")?.toLong() ?: 500
+            }
+
+            /**
+             * Configuration for various node related services
+             */
+            object Services {
+
+                /**
+                 * Configuration for the HintedHandoff Service
+                 */
+                object HintedHandoff {
+
+                    /**
+                     * The delay in seconds before attempting to send another hinted request to its original node
+                     */
+                    val HINT_DELAY_S = System.getenv("CLUSTER_NODE_SERVICE_HINTS_DELAY_S")?.toInt() ?: 1
+                }
+            }
+        }
+    }
+
+    companion object {
 
         private class Hasher {
             fun generateHash(key: String): Long {

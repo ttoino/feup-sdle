@@ -2,6 +2,7 @@ package pt.up.fe.sdle.storage
 
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import java.nio.file.Paths
@@ -64,6 +65,7 @@ class FileSystemStorageDriver : BaseStorageDriver() {
     }
 
     companion object {
-        const val DATA_FILE_LOCATION: String = "data"
+
+        private val DATA_FILE_LOCATION: String = Cluster.Config.Storage.FileSystem.DATA_FILE_LOCATION
     }
 }

@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import pt.up.fe.sdle.api.ClusterJoinRequest
 import pt.up.fe.sdle.api.ClusterJoinResponse
+import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.logger
 
@@ -22,7 +23,7 @@ class NodeBootstrapService(private val node: Node, private val httpClient: HttpC
         if (bootstrapped) return
 
         val connectIp =
-            System.getenv("CONNECT_ADDRESS") ?: run {
+            Cluster.Config.Bootstrap.CONNECT_ADDRESS ?: run {
                 bootstrapped = true
                 return
             }
@@ -81,11 +82,11 @@ class NodeBootstrapService(private val node: Node, private val httpClient: HttpC
          *
          * This value is used in conjunction with an integer that goes from 0 to [MAX_RETRIES] to provide an exponential backoff mechanism.
          */
-        val MIN_TIMEOUT_MS: Long = System.getenv("CLUSTER_CONNECT_MIN_TIMEOUT")?.toLong() ?: 500
+        val MIN_TIMEOUT_MS: Long = Cluster.Config.Bootstrap.MIN_TIMEOUT_MS
 
         /**
          * The maximum number of retries to try before giving up on connecting to a cluster.
          */
-        val MAX_RETRIES = System.getenv("CLUSTER_CONNECT_MAX_RETRIES")?.toInt() ?: 3
+        val MAX_RETRIES = Cluster.Config.Bootstrap.MAX_RETRIES
     }
 }

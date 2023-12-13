@@ -62,8 +62,8 @@ abstract class Node protected constructor(
                 json()
             }
             install(HttpTimeout) {
-                requestTimeoutMillis = System.getenv("HTTP_REQUEST_TIMEOUT_MS")?.toLong() ?: 1500
-                connectTimeoutMillis = System.getenv("HTTP_CONNECT_TIMEOUT_MS")?.toLong() ?: 500
+                requestTimeoutMillis = Cluster.Config.Node.Request.TIMEOUT_MS
+                connectTimeoutMillis = Cluster.Config.Node.Request.CONNECT_TIMEOUT_MS
             }
         }
 

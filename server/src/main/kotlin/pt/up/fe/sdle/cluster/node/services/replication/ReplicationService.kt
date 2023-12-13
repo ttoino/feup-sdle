@@ -4,6 +4,21 @@ import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageKey
 
 /**
+ * Result of replicating a value to another nodes of this nodes cluster.
+ */
+data class ReplicatedValue(
+    /**
+     * The replica of the data sent
+     */
+    val data: ShoppingList?,
+
+    /**
+     * Whether the replicated operation succeeded
+     */
+    val success: Boolean = true
+)
+
+/**
  * Service responsible for replicating data on a node.
  */
 interface ReplicationService {
@@ -25,5 +40,5 @@ interface ReplicationService {
      * @param key The under which the desired data is stored
      * @return The number of successful replicas
      */
-    suspend fun replicateGet(key: StorageKey): List<Pair<ShoppingList?, Boolean>>
+    suspend fun replicateGet(key: StorageKey): List<ReplicatedValue>
 }

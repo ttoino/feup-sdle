@@ -64,7 +64,7 @@ class LocalNode(
         if (!replica) {
             stored += replicationService.replicatePut(key, mergedShoppingList)
 
-            if (stored >= Cluster.WRITE_QUORUM) {
+            if (stored >= Cluster.Config.Node.Quorum.WRITE) {
                 logger.info("Quorum met! Stored merged list")
                 return mergedShoppingList
             } else {
@@ -93,7 +93,9 @@ class LocalNode(
         if (!replica) {
             val replicas = replicationService.replicateGet(key)
 
-            if (replicas.filter { it.second }.size < Cluster.READ_QUORUM - 1) {
+            val healthyReplicas = replicas.filter { it.success } // Get replicas that succeeded
+
+            if (healthyReplicas.size < Cluster.Config.Node.Quorum.READ - 1) {
                 logger.error("Quorum not reached, returning null")
 
                 throw Exception("Quorum not reached for reads")
@@ -101,9 +103,8 @@ class LocalNode(
 
             logger.info("REPLICA: Returning retrieved list.")
 
-            return shoppingList ?: replicas
-                .filter { it.second } // Get replicas that succeeded
-                .map { it.first } // Extract the result
+            return shoppingList ?: healthyReplicas
+                .map { it.data } // Extract the result
                 .firstOrNull { it !== null } // Try to get the first non-null result
         } else {
             logger.info("REPLICA: Returning retrieved list")
