@@ -5,6 +5,7 @@ package pt.up.fe.sdle.cluster
 import kotlinx.serialization.Serializable
 import pt.up.fe.sdle.cluster.node.Node
 import pt.up.fe.sdle.cluster.node.NodeID
+import pt.up.fe.sdle.cluster.node.node
 import pt.up.fe.sdle.logger
 import java.security.MessageDigest
 import java.util.*
@@ -60,8 +61,7 @@ class Cluster {
      * @param node The node whose virtual node hashes we want.
      * @return The hashes for the virtual nodes that [node] generates.
      */
-    private fun generateVirtualNodeHashes(node: Node) =
-        List(virtualNodeAmount) { hasher.generateHash("${node.id}-vn$it") }
+    private fun generateVirtualNodeHashes(node: Node) = generateVirtualNodeHashes(node.id)
 
     /**
      * Generates the hashes used by the virtual nodes of a given node using the node's id.
@@ -197,7 +197,13 @@ class Cluster {
         synchronized(lock) {
             // TODO: what if this is the physical node
             nodeRing[nodeHash]?.let {
-                val updatedClusterNode = it.copy(second = status)
+                var updatedClusterNode = it.copy(second = status)
+
+                if (it.first.address.startsWith("0.0.0.0") && it.first.id !== pt.up.fe.sdle.cluster.node.node.id) {
+                    val clusterNode = updatedClusterNode.first
+
+                    updatedClusterNode = updatedClusterNode.copy(first = Node.newWith(clusterNode.id, nodeAddress))
+                }
 
                 nodeRing.put(nodeHash, updatedClusterNode)
             } ?: run {
@@ -206,7 +212,13 @@ class Cluster {
 
             virtualNodesHashes.forEach { hash ->
                 nodeRing[hash]?.let {
-                    val updatedClusterNode = it.copy(second = status)
+                    var updatedClusterNode = it.copy(second = status)
+
+                    if (it.first.address.startsWith("0.0.0.0") && it.first.id !== pt.up.fe.sdle.cluster.node.node.id) {
+                        val clusterNode = updatedClusterNode.first
+
+                        updatedClusterNode = updatedClusterNode.copy(first = Node.newWith(clusterNode.id, nodeAddress))
+                    }
 
                     nodeRing.put(hash, updatedClusterNode)
                 } ?: run {
@@ -214,8 +226,6 @@ class Cluster {
                 }
             }
         }
-
-
     }
 
     /**
@@ -235,7 +245,13 @@ class Cluster {
                 val virtualNodesHashes = generateVirtualNodeHashes(nodeId)
 
                 nodeRing[nodeHash]?.let {
-                    val updatedClusterNode = it.copy(second = status)
+                    var updatedClusterNode = it.copy(second = status)
+
+                    if (it.first.address.startsWith("0.0.0.0") && it.first.id !== node.id) {
+                        val clusterNode = updatedClusterNode.first
+
+                        updatedClusterNode = updatedClusterNode.copy(first = Node.newWith(clusterNode.id, nodeAddress))
+                    }
 
                     nodeRing.put(nodeHash, updatedClusterNode)
                 } ?: run {
@@ -244,7 +260,14 @@ class Cluster {
 
                 virtualNodesHashes.forEach { hash ->
                     nodeRing[hash]?.let {
-                        val updatedClusterNode = it.copy(second = status)
+                        var updatedClusterNode = it.copy(second = status)
+
+                        if (it.first.address.startsWith("0.0.0.0") && it.first.id !== node.id) {
+                            val clusterNode = updatedClusterNode.first
+
+                            updatedClusterNode =
+                                updatedClusterNode.copy(first = Node.newWith(clusterNode.id, nodeAddress))
+                        }
 
                         nodeRing.put(hash, updatedClusterNode)
                     } ?: run {
@@ -256,12 +279,19 @@ class Cluster {
     }
 
     /**
+     * Returns the number of physical nodes in this cluster's node ring.
+     *
+     * @return The number of physical nodes in this cluster's node ring.
+     */
+    private fun getPhysicalNodeCount() = nodeRing.filter { !it.value.third }.size
+
+    /**
      * Returns the actual replication amount for nodes in this cluster.
      * This is done to prevent a node from replicating data onto itself.
      *
      * @return The actual replication amount for this cluster.
      */
-    private fun getReplicationAmount() = min(nodeRing.filter { !it.value.third }.size - 1, REPLICATION_FACTOR)
+    private fun getReplicationAmount() = min(getPhysicalNodeCount() - 1, REPLICATION_FACTOR)
 
     companion object {
         /**

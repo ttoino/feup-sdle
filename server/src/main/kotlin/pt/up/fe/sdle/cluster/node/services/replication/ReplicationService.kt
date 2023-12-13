@@ -25,5 +25,5 @@ interface ReplicationService {
      * @param key The under which the desired data is stored
      * @return The number of successful replicas
      */
-    suspend fun replicateGet(key: StorageKey): Int
+    suspend fun replicateGet(key: StorageKey): List<Pair<ShoppingList?, Boolean>>
 }

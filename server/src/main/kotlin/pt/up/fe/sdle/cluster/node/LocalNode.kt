@@ -7,6 +7,8 @@ import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
 import pt.up.fe.sdle.cluster.node.services.bootstrap.NodeBootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.DummyGossipProtocolService
 import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
+import pt.up.fe.sdle.cluster.node.services.handoff.HintedHandoffService
+import pt.up.fe.sdle.cluster.node.services.handoff.NodeHintedHandoffService
 import pt.up.fe.sdle.cluster.node.services.replication.NodeReplicationService
 import pt.up.fe.sdle.cluster.node.services.replication.ReplicationService
 import pt.up.fe.sdle.crdt.ShoppingList
@@ -26,11 +28,16 @@ class LocalNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
+
+    override val hintService: HintedHandoffService = NodeHintedHandoffService()
+
     /**
      * Service responsible for replicating data for this node.
      */
     private val replicationService: ReplicationService = NodeReplicationService(this)
+
     override val bootstrapService: BootstrapService = NodeBootstrapService(this, httpClient)
+
     override val gossipService: GossipProtocolService = DummyGossipProtocolService()
 
     override suspend fun put(
@@ -79,22 +86,25 @@ class LocalNode(
         logger.info("${if (replica) "REPLICA: " else ""}Retrieving list with id $key")
 
         val shoppingList: ShoppingList?
-        var retrieved = 0
         synchronized(key) {
             shoppingList = this.storageDriver.retrieve(key)
-            retrieved += if (shoppingList !== null) 1 else 0
         }
 
         if (!replica) {
-            retrieved += replicationService.replicateGet(key)
+            val replicas = replicationService.replicateGet(key)
 
-            if (retrieved >= Cluster.READ_QUORUM) {
-                logger.info("Quorum met! Returning retrieved list")
-                return shoppingList
-            } else {
-                logger.error("Failed to retrieve data!")
-                return null
+            if (replicas.filter { it.second }.size < Cluster.READ_QUORUM - 1) {
+                logger.error("Quorum not reached, returning null")
+
+                throw Exception("Quorum not reached for reads")
             }
+
+            logger.info("REPLICA: Returning retrieved list.")
+
+            return shoppingList ?: replicas
+                .filter { it.second } // Get replicas that succeeded
+                .map { it.first } // Extract the result
+                .firstOrNull { it !== null } // Try to get the first non-null result
         } else {
             logger.info("REPLICA: Returning retrieved list")
             return shoppingList

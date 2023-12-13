@@ -11,6 +11,7 @@ import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.cluster.ClusterNode
 import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
+import pt.up.fe.sdle.cluster.node.services.handoff.HintedHandoffService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageDriverFactory
 import pt.up.fe.sdle.storage.StorageKey
@@ -75,6 +76,11 @@ abstract class Node protected constructor(
      * Service responsible for bootstrapping this node.
      */
     protected abstract val bootstrapService: BootstrapService
+
+    /**
+     * Service responsible for managing hints generated at this node.
+     */
+    protected abstract val hintService: HintedHandoffService
 
     companion object {
         /**

@@ -15,7 +15,12 @@ class NodeReplicationService(
     /**
      * The node for whom we want to replicate data
      */
-    val node: Node,
+    private val node: Node,
+
+    /**
+     * The service responsible for storing hints for a given node.
+     */
+    // private val hintService: HintedHandoffService
 ) : ReplicationService {
     override suspend fun replicatePut(
         key: StorageKey,
@@ -34,6 +39,9 @@ class NodeReplicationService(
                             -> {
                                 // Couldn't reach node, mark it as unavailable
                                 node.cluster.updateNodeStatus(ClusterNode(it.id, it.address, false))
+
+                                // Store a hint so that the hint service tries to re-send it
+                                // hintService.storeHint(Hint(it, data, true)) this is already handled by the node since it should be a RemoteNode
                             }
                         }
 
@@ -45,13 +53,13 @@ class NodeReplicationService(
         return results.count { it !== null }
     }
 
-    override suspend fun replicateGet(key: StorageKey): Int {
-        val results: List<ShoppingList?>
+    override suspend fun replicateGet(key: StorageKey): List<Pair<ShoppingList?, Boolean>> {
+        val results: List<Pair<ShoppingList?, Boolean>>
         coroutineScope {
             results =
                 node.cluster.getReplicationNodesFor(node).map {
                     try {
-                        it.get(key, true)
+                        Pair(it.get(key, true), true)
                     } catch (e: Exception) {
                         when (e) {
                             is ConnectTimeoutException,
@@ -62,11 +70,11 @@ class NodeReplicationService(
                             }
                         }
 
-                        null
+                        Pair(null, false)
                     }
                 }
         }
 
-        return results.count { it !== null }
+        return results
     }
 }

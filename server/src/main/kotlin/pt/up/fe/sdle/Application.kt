@@ -12,7 +12,6 @@ import io.ktor.server.plugins.callid.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.cors.routing.*
 import io.ktor.server.plugins.defaultheaders.*
-import io.ktor.server.plugins.forwardedheaders.*
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
 import pt.up.fe.sdle.api.configureRouting
@@ -61,10 +60,8 @@ fun Application.module() {
     }
     install(CORS) {
         anyHost()
+        allowMethod(HttpMethod.Options)
         allowHeadersPrefixed("")
-//        allowHost("0.0.0.0:5173")
-        allowHeader(HttpHeaders.ContentType)
-//        allowHeader(HttpHeaders.Accept)
     }
     // install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
     // install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy

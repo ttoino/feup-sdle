@@ -16,6 +16,9 @@ import pt.up.fe.sdle.api.SyncResponse
 import pt.up.fe.sdle.cluster.ClusterNode
 import pt.up.fe.sdle.cluster.node.services.bootstrap.DummyBootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.NodeGossipProtocolService
+import pt.up.fe.sdle.cluster.node.services.handoff.Hint
+import pt.up.fe.sdle.cluster.node.services.handoff.HintedHandoffService
+import pt.up.fe.sdle.cluster.node.services.handoff.NodeHintedHandoffService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageKey
@@ -32,6 +35,7 @@ class RemoteNode(
 ) : Node(address, id) {
     override val gossipService = NodeGossipProtocolService(this, httpClient)
     override val bootstrapService = DummyBootstrapService()
+    override val hintService: HintedHandoffService = NodeHintedHandoffService()
 
     override suspend fun put(
         key: StorageKey,
@@ -70,6 +74,9 @@ class RemoteNode(
                     logger.error("Node with id $id and address $address is unreachable", e)
 
                     node.cluster.updateNodeStatus(ClusterNode(this.id, this.address, false))
+
+                    // Store a hint for this node
+                    hintService.storeHint(Hint(this, data, replica))
                 }
 
                 else -> logger.error("Unknown network error", e)
