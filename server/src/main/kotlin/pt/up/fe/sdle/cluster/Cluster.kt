@@ -215,7 +215,7 @@ class Cluster {
             nodeRing[nodeHash]?.let {
                 var updatedClusterNode = it.copy(second = status)
 
-                if (it.first.address.startsWith("0.0.0.0")) {
+                if (it.first.address.startsWith("0.0.0.0") && it.first.id !== pt.up.fe.sdle.cluster.node.node.id) {
                     val clusterNode = updatedClusterNode.first
 
                     updatedClusterNode = updatedClusterNode.copy(first = Node.newWith(clusterNode.id, nodeAddress))
@@ -230,7 +230,7 @@ class Cluster {
                 nodeRing[hash]?.let {
                     var updatedClusterNode = it.copy(second = status)
 
-                    if (it.first.address.startsWith("0.0.0.0")) {
+                    if (it.first.address.startsWith("0.0.0.0") && it.first.id !== pt.up.fe.sdle.cluster.node.node.id) {
                         val clusterNode = updatedClusterNode.first
 
                         updatedClusterNode = updatedClusterNode.copy(first = Node.newWith(clusterNode.id, nodeAddress))
