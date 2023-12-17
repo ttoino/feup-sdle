@@ -5,7 +5,6 @@ import { extendPrototype } from "localforage-observable";
 
 const localforage = extendPrototype(localForage);
 
-if (browser)
-    setup();
+if (browser) setup();
 
 export default localforage;

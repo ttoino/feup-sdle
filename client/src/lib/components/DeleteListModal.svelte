@@ -1,9 +1,6 @@
 <script lang="ts">
-    import { Icon, Check, XMark } from "svelte-hero-icons";
-    import NewList from "./NewList.svelte";
+    import { Icon, XMark } from "svelte-hero-icons";
     import { onNavigate } from "$app/navigation";
-    import localforage from "localforage";
-    import { addNotification } from "$lib/stores/notifications";
     import type ShoppingList from "$lib/list";
     import * as listService from "$lib/service/list";
 

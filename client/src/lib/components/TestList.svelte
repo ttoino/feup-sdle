@@ -1,7 +1,7 @@
 <script lang="ts">
     import { PUBLIC_SERVER_URL } from "$env/static/public";
     import { Icon, Play } from "svelte-hero-icons";
-    import ShoppingList, { type ShoppingListJSON } from "$lib/list";
+    import ShoppingList from "$lib/list";
     import zod from "zod";
 
     const syncResponseSchema = zod.object({

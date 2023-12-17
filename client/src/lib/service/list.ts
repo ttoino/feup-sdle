@@ -121,8 +121,8 @@ export const get = async (
     if (remote) {
         syncLocal(remote);
 
-        return remote
-    };
+        return remote;
+    }
 };
 
 export const getAll = async () => {

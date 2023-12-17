@@ -18,6 +18,7 @@
         <Icon src={Swatch} class="h-6 w-6 md:hidden" />
     </div>
     <ul
+        role="menu"
         tabindex="0"
         class="menu dropdown-content !fixed right-2 mt-4 h-96 max-h-[calc(100vh-6rem)] flex-nowrap gap-2 overflow-y-auto rounded-box bg-base-200 p-2 shadow-xl"
     >
@@ -43,6 +44,8 @@
                     aria-label={theme}
                     checked={theme === $selectedTheme}
                     on:change={onChange}
+                    role="menuitemradio"
+                    aria-checked={theme === $selectedTheme}
                 />
                 <Icon
                     src={Check}

@@ -1,9 +1,6 @@
 <script lang="ts">
     import type ShoppingList from "$lib/list";
     import "$lib/components/DeleteListModal.svelte";
-    import { Icon, XMark } from "svelte-hero-icons";
-    import localforage from "localforage";
-    import { addNotification } from "$lib/stores/notifications";
     import MVRegister from "$lib/components/MVRegister.svelte";
     import DeleteListModal from "$lib/components/DeleteListModal.svelte";
 
