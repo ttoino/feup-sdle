@@ -17,6 +17,9 @@ import org.slf4j.Logger
 import pt.up.fe.sdle.api.configureRouting
 import pt.up.fe.sdle.cluster.node.LocalNode
 import pt.up.fe.sdle.cluster.node.Node
+import java.net.InetAddress
+import java.net.NetworkInterface
+
 
 /**
  *
@@ -68,7 +71,19 @@ fun Application.module() {
 
     configureRouting()
 
-    val node = Node.newWithAddress("${environment.config.host}:${environment.config.port}")
+    val localHost = InetAddress.getLocalHost()
+    val ni = NetworkInterface.getByInetAddress(localHost)
+    val hardwareAddress = ni.hardwareAddress
+
+    val hexadecimal = arrayOfNulls<String>(hardwareAddress.size)
+    for (i in hardwareAddress.indices) {
+        hexadecimal[i] = java.lang.String.format("%02X", hardwareAddress[i])
+    }
+    val macAddress = java.lang.String.join("-", *hexadecimal)
+
+    log.info("Node with joining with ID $macAddress")
+
+    val node = Node.newWith(macAddress, "${environment.config.host}:${environment.config.port}")
     log.info("Bootstrapping ${if (node is LocalNode) "local" else "remote"} node with id: ${node.id}")
     launch {
         node.bootstrap()
