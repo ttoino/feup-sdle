@@ -66,7 +66,6 @@ internal fun Route.loadShoppingListRoutes() {
     }
 
     get("/lists") {
-
     }
 
     route("/{listId}") {

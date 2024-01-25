@@ -28,7 +28,6 @@ class LocalNode(
     address: String = "0.0.0.0",
     id: NodeID = UUID.randomUUID().toString(),
 ) : Node(address, id) {
-
     override val hintService: HintedHandoffService = NodeHintedHandoffService()
 
     /**
@@ -75,7 +74,6 @@ class LocalNode(
                 logger.info("Write sloppy quorum reached! Returning own merged list.")
 
                 return if (stored) mergedShoppingList else healthyReplicas.map { it.data }.first()!!
-
             } else {
                 // TODO: implement stricter quorum semantics for PUT operations
 
@@ -131,12 +129,13 @@ class LocalNode(
 
                 logger.info("Read quorum reached! Returning retrieved list.")
 
-                val (_, list) = groupedValues.maxOfWith({ entry1, entry2 ->
-                    val (_, decision1) = entry1
-                    val (_, decision2) = entry2
+                val (_, list) =
+                    groupedValues.maxOfWith({ entry1, entry2 ->
+                        val (_, decision1) = entry1
+                        val (_, decision2) = entry2
 
-                    decision1.count().compareTo(decision2.count())
-                }, { it })
+                        decision1.count().compareTo(decision2.count())
+                    }, { it })
 
                 return list.firstOrNull()
             }

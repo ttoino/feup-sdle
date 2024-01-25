@@ -14,11 +14,9 @@ import kotlin.time.Duration.Companion.seconds
  * TODO change KDocs
  */
 class NodeHintedHandoffService : HintedHandoffService {
-
     private val hints: ConcurrentLinkedQueue<Hint> = ConcurrentLinkedQueue()
 
     override suspend fun storeHint(hint: Hint) {
-
         logger.info("Storing hint for data ")
 
         hints.add(hint)
@@ -46,9 +44,7 @@ class NodeHintedHandoffService : HintedHandoffService {
                         node.put(listId, list, replica)
 
                         // TODO: we should merge so that we save a few steps later
-
                     } catch (e: Exception) {
-
                         when (e) {
                             is HttpConnectTimeoutException -> {
                                 logger.warn(

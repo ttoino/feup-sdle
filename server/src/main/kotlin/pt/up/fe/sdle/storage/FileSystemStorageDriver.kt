@@ -6,7 +6,11 @@ import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import java.nio.file.Paths
-import kotlin.io.path.*
+import kotlin.io.path.createDirectories
+import kotlin.io.path.exists
+import kotlin.io.path.isDirectory
+import kotlin.io.path.isRegularFile
+import kotlin.io.path.pathString
 
 /**
  * Storage driver that persists its contents to the file system.
@@ -73,7 +77,6 @@ class FileSystemStorageDriver : BaseStorageDriver() {
     }
 
     companion object {
-
         private val DATA_FILE_LOCATION: String = Cluster.Config.Storage.FileSystem.DATA_FILE_LOCATION
     }
 }

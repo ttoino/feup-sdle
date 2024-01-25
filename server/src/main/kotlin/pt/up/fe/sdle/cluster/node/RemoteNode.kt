@@ -59,7 +59,6 @@ class RemoteNode(
         val response: HttpResponse
         val endpoint = "http://$address/list/${data.id}"
         try {
-
             response =
                 httpClient.post(endpoint) {
                     contentType(ContentType.Application.Json)
@@ -86,7 +85,6 @@ class RemoteNode(
         }
 
         if (!response.status.isSuccess()) {
-
             when (true) {
                 (response.status == HttpStatusCode.BadRequest) -> {
                     logger.warn("Node with id $id @ $address failed when merging list with id $key.")

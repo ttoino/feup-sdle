@@ -172,8 +172,8 @@ class Cluster {
                 // Even if we add ourselves we won't be added to the replica set because of the -1 in the 'actualReplicationAmount' calculation
 
                 orderedFollowNodes.values.map { it.first }.toList() +
-                        physicalNodes.tailMap(physicalNodes.firstKey())
-                            .map { it.value.first }.toList()
+                    physicalNodes.tailMap(physicalNodes.firstKey())
+                        .map { it.value.first }.toList()
             } else {
                 // We have enough nodes, extract them from map values
                 orderedFollowNodes.values.map { it.first }
@@ -188,13 +188,13 @@ class Cluster {
      * @return A list of nodes that are responsible for replicating the given key
      */
     fun getReplicationNodesFor(id: NodeID): List<Node> {
-
         val physicalNodes = nodeRing.filter { !it.value.third }.takeIf { it.size > 1 }?.toSortedMap() ?: return listOf()
 
         val hash = hasher.generateHash(id)
 
-        return physicalNodes.tailMap(hash).map { it.value.first }.toList() + physicalNodes.headMap(hash)
-            .map { it.value.first }.toList()
+        return physicalNodes.tailMap(hash).map { it.value.first }.toList() +
+            physicalNodes.headMap(hash)
+                .map { it.value.first }.toList()
     }
 
     /**
@@ -313,12 +313,10 @@ class Cluster {
      * Configuration values for this cluster
      */
     object Config {
-
         /**
          * Configuration options when bootstrapping a node.
          */
         object Bootstrap {
-
             /**
              * The initial cluster address to connect to.
              */
@@ -346,7 +344,6 @@ class Cluster {
          * Storage layer configuration
          */
         object Storage {
-
             /**
              * The type of driver to return, computed from system configs.
              */
@@ -356,7 +353,6 @@ class Cluster {
              * Configuration values for the [FileSystemStorageDriver]
              */
             object FileSystem {
-
                 /**
                  * The location where files are stored under
                  */
@@ -371,14 +367,13 @@ class Cluster {
             /**
              * The replication factor for nodes in this cluster.
              */
-            val REPLICATION_FACTOR: Int get() = _replicationFactor
-            private var _replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
+            val REPLICATION_FACTOR: Int get() = replicationFactor
+            private var replicationFactor = System.getenv("CLUSTER_NODE_REPLICATION_FACTOR")?.toInt() ?: 1
 
             /**
              * Node communication quorum configurations
              */
             object Quorum {
-
                 /**
                  * Whether the quorum mechanisms applied should be sloppy or not.
                  */
@@ -397,10 +392,11 @@ class Cluster {
                 init {
                     if (READ + WRITE <= REPLICATION_FACTOR) {
                         logger.warn(
-                            "Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than READ_QUORUM($READ) + WRITE_QUORUM($WRITE). Tuning REPLICATION_FACTOR",
+                            "Invalid configuration: REPLICATION_FACTOR($REPLICATION_FACTOR) must be less than " +
+                                "READ_QUORUM($READ) + WRITE_QUORUM($WRITE). Tuning REPLICATION_FACTOR",
                         )
 
-                        _replicationFactor = READ + WRITE - 1
+                        replicationFactor = READ + WRITE - 1
                     }
                 }
             }
@@ -409,7 +405,6 @@ class Cluster {
              * Configuration for requests originating from a node.
              */
             object Request {
-
                 /**
                  * Timeout in milliseconds for a request to complete.
                  */
@@ -425,12 +420,10 @@ class Cluster {
              * Configuration for various node related services
              */
             object Services {
-
                 /**
                  * Configuration for the HintedHandoff Service
                  */
                 object HintedHandoff {
-
                     /**
                      * The delay in seconds before attempting to send another hinted request to its original node
                      */
@@ -441,7 +434,6 @@ class Cluster {
     }
 
     companion object {
-
         private class Hasher {
             fun generateHash(key: String): Long {
                 val hashAlgorithm = MessageDigest.getInstance("MD5")
@@ -451,9 +443,9 @@ class Cluster {
                 val digest = hashAlgorithm.digest()
 
                 return (digest[3].toLong() and 0xFF shl 24) or
-                        (digest[2].toLong() and 0xFF shl 16) or
-                        (digest[1].toLong() and 0xFF shl 8) or
-                        (digest[0].toLong() and 0xFF)
+                    (digest[2].toLong() and 0xFF shl 16) or
+                    (digest[1].toLong() and 0xFF shl 8) or
+                    (digest[0].toLong() and 0xFF)
             }
         }
     }

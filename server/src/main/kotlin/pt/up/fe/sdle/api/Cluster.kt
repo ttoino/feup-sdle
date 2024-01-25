@@ -139,7 +139,7 @@ internal fun Route.loadClusterManagementRoutes() {
                     isVirtual,
                     isAlive,
                     otherNode.id == node.id,
-                    replicas
+                    replicas,
                 )
             }.filterNotNull()
 
@@ -157,7 +157,7 @@ internal fun Route.loadClusterManagementRoutes() {
         cluster.updateNodeStatuses(payload.nodes)
 
         val currentClusterNodes = node.cluster.nodes.values.filter { !it.third }
-        
+
         val otherNodes =
             currentClusterNodes.filter { it.first.id !== node.id && it.first.id !== payload.node.nodeId }
 

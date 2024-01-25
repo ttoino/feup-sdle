@@ -11,11 +11,10 @@ data class ReplicatedValue(
      * The replica of the data sent
      */
     val data: ShoppingList?,
-
     /**
      * Whether the replicated operation succeeded
      */
-    val success: Boolean = true
+    val success: Boolean = true,
 )
 
 /**

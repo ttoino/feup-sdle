@@ -20,7 +20,6 @@ import pt.up.fe.sdle.cluster.node.Node
 import java.net.InetAddress
 import java.net.NetworkInterface
 
-
 /**
  *
  */
