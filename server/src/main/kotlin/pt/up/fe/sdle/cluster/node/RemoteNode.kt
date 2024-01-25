@@ -1,13 +1,17 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package pt.up.fe.sdle.cluster.node
 
-import io.ktor.client.call.*
-import io.ktor.client.network.sockets.*
-import io.ktor.client.plugins.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
+import io.ktor.client.call.body
+import io.ktor.client.network.sockets.ConnectTimeoutException
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import io.ktor.client.request.accept
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import pt.up.fe.sdle.api.GetResponse
@@ -22,7 +26,7 @@ import pt.up.fe.sdle.cluster.node.services.handoff.NodeHintedHandoffService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageKey
-import java.util.*
+import java.util.UUID
 
 /**
  * Represents a peer node in the context of this running instance.

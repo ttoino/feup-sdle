@@ -1,5 +1,3 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package pt.up.fe.sdle.cluster.node
 
 import pt.up.fe.sdle.cluster.Cluster
@@ -15,7 +13,7 @@ import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.logger
 import pt.up.fe.sdle.storage.StorageDriver
 import pt.up.fe.sdle.storage.StorageKey
-import java.util.*
+import java.util.UUID
 
 /**
  * Represents the node object running on this instance, which is responsible for storing and retrieving data with a [StorageDriver].

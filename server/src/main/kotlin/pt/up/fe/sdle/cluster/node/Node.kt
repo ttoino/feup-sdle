@@ -1,12 +1,10 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package pt.up.fe.sdle.cluster.node
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.plugins.*
-import io.ktor.client.plugins.contentnegotiation.*
-import io.ktor.serialization.kotlinx.json.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import pt.up.fe.sdle.cluster.Cluster
 import pt.up.fe.sdle.cluster.node.services.bootstrap.BootstrapService
 import pt.up.fe.sdle.cluster.node.services.gossip.GossipProtocolService
@@ -14,7 +12,7 @@ import pt.up.fe.sdle.cluster.node.services.handoff.HintedHandoffService
 import pt.up.fe.sdle.crdt.ShoppingList
 import pt.up.fe.sdle.storage.StorageDriverFactory
 import pt.up.fe.sdle.storage.StorageKey
-import java.util.*
+import java.util.UUID
 import pt.up.fe.sdle.cluster.cluster as _cluster
 
 /**

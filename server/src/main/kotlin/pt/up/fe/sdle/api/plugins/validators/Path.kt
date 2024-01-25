@@ -1,10 +1,8 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package pt.up.fe.sdle.api.plugins.validators
 
-import io.ktor.http.*
-import io.ktor.server.application.*
-import io.ktor.server.response.*
+import io.ktor.http.HttpStatusCode
+import io.ktor.server.application.createRouteScopedPlugin
+import io.ktor.server.response.respond
 
 /**
  * Configuration used by the [PathParameterValidator] plugin.

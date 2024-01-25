@@ -1,19 +1,29 @@
-@file:Suppress("ktlint:standard:no-wildcard-imports")
-
 package pt.up.fe.sdle
 
-import io.ktor.http.*
-import io.ktor.http.content.*
-import io.ktor.serialization.kotlinx.json.*
-import io.ktor.server.application.*
-import io.ktor.server.plugins.autohead.*
-import io.ktor.server.plugins.cachingheaders.*
-import io.ktor.server.plugins.callid.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.plugins.cors.routing.*
-import io.ktor.server.plugins.defaultheaders.*
+import io.ktor.http.CacheControl
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpMethod
+import io.ktor.http.content.CachingOptions
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.Application
+import io.ktor.server.application.host
+import io.ktor.server.application.install
+import io.ktor.server.application.log
+import io.ktor.server.application.port
+import io.ktor.server.plugins.autohead.AutoHeadResponse
+import io.ktor.server.plugins.cachingheaders.CachingHeaders
+import io.ktor.server.plugins.callid.CallId
+import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.plugins.cors.routing.CORS
+import io.ktor.server.plugins.defaultheaders.DefaultHeaders
+import io.ktor.server.plugins.forwardedheaders.ForwardedHeaders
+import io.ktor.server.plugins.forwardedheaders.XForwardedHeaders
+import io.ktor.server.request.path
 import kotlinx.coroutines.launch
 import org.slf4j.Logger
+import org.slf4j.event.Level
 import pt.up.fe.sdle.api.configureRouting
 import pt.up.fe.sdle.cluster.node.LocalNode
 import pt.up.fe.sdle.cluster.node.Node
@@ -35,10 +45,10 @@ lateinit var logger: Logger
  */
 fun Application.module() {
     logger = environment.log
-    /*install(CallLogging) {
-        level = Level.INFO
+    install(CallLogging) {
+        level = Level.TRACE
         filter { call -> call.request.path().startsWith("/") }
-    }*/
+    }
     install(AutoHeadResponse)
     install(CallId) {
         header(HttpHeaders.XRequestId)
@@ -65,8 +75,8 @@ fun Application.module() {
         allowMethod(HttpMethod.Options)
         allowHeadersPrefixed("")
     }
-    // install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
-    // install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
+    install(ForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
+    install(XForwardedHeaders) // WARNING: for security, do not include this if not behind a reverse proxy
 
     configureRouting()
 
