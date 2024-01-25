@@ -7,7 +7,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
     const list = await listService.get(listId, fetch);
 
-    if (!list) throw error(404, "List not found");
+    if (!list) error(404, "List not found");
 
     return { list };
 };
