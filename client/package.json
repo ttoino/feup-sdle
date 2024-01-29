@@ -47,7 +47,7 @@
         "typescript": "^5.3.3",
         "uuid": "^9.0.1",
         "vite": "^5.0.12",
-        "vitest": "^1.2.1",
+        "vitest": "^1.2.2",
         "zen-observable": "^0.10.0",
         "zod": "^3.22.4"
     },
