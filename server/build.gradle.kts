@@ -6,7 +6,7 @@ plugins {
     kotlin("jvm") version "1.9.21"
     kotlin("plugin.serialization") version "1.9.21"
     id("io.ktor.plugin") version "2.3.6"
-    id("org.jlleitschuh.gradle.ktlint") version "12.0.2"
+    id("org.jlleitschuh.gradle.ktlint") version "12.1.0"
 }
 
 group = "pt.up.fe.sdle"
